@@ -16,7 +16,9 @@
 
 ## 🚀 Main Projects
 
-- [LSTM for Flood and Drought Forecasting](https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting)
+- Agent-based
+- Grid Operation [In Progress]
+-[LSTM for Flood and Drought Forecasting](https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting)
 - [Vending Machine Prototype with Microcontroller](https://github.com/TalhaRehmanMTRKT/Vending_Machine)
 
 ## 📚 My Journey
@@ -26,6 +28,8 @@ I'm a Master's student at Incheon National University, South Korea at the [Power
 😄 I'm passionate about Deep Learning and its applications.
 
 🌱 I’m always learning and exploring new avenues in Electrical Engineering.
+
+🌐 I'm deeply passionate about contributing to the open-source projects
 
 <div align="center">
   <img alt="Talha's GitHub Stats" src="https://github-readme-stats.vercel.app/api?username=TalhaRehmanMTRKT&show_icons=true&count_private=true&theme=material-palenight&border_radius=8" width="49%">
