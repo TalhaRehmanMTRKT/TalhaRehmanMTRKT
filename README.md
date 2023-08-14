@@ -12,7 +12,7 @@ My name is Talha Rehman, I am a Master's student in Electrical Engineering, at t
 🌱 I’m currently learning ...
 
 <p align="center">
-    <img alt="most used languages" width="500px" src="https://github-readme-stats.vercel.app/api/top-langs/?username=TalhaRehmanMTRKT&count_private=true&theme=material-palenight&border_radius=8&hide=TeX,HTML,javascript,jupyter%20notebook"/>
+    <img alt="most languages in my repo" width="500px" src="https://github-readme-stats.vercel.app/api/top-langs/?username=TalhaRehmanMTRKT&count_private=true&theme=material-palenight&border_radius=8&hide=TeX,HTML,javascript,jupyter%20notebook"/>
 </p>
 
 ## Main projects
