@@ -9,7 +9,7 @@
   <a href="https://github.com/TalhaRehmanMTRKT" target="blank"><img src="https://img.shields.io/badge/GitHub-Follow-181717?logo=github&style=flat-square" alt="GitHub"></a>
 </p>
 
-🔭 I’m currently working on ...
+## 🔭 I’m currently working on
 
 - Deep Reinforcement learning applied to Energy Systems
 - Microgrid Optimization
