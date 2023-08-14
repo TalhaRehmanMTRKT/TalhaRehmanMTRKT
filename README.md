@@ -1,6 +1,6 @@
 <h1 align="center">Hello there!  👋 </h1>
 
-My Name is Talha Rehman, I am a Master's student in Electrical Engineering, at the [Power and Renewable Energy Lab](https://hvdcmicrogrid.wixsite.com/powerlab) in Incheon National University, South Korea.
+My name is Talha Rehman, I am a Master's student in Electrical Engineering, at the [Power and Renewable Energy Lab](https://hvdcmicrogrid.wixsite.com/powerlab) in Incheon National University, South Korea.
 
 🔭 I’m currently working on ...
 
