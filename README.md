@@ -37,6 +37,6 @@ I'm a Master's student at Incheon National University, South Korea at the [Power
 ## CV
 
 ## 💬 Let's Connect
-I'm always open to connecting with fellow researchers, engineers, and tech enthusiasts. Feel free to [reach out on LinkedIn](https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/) or [explore my GitHub](https://github.com/TalhaRehmanMTRKT) to learn more about my projects and contributions.
+I'm always open to connecting with fellow researchers, engineers, and deep learning enthusiasts. Feel free to [reach out on LinkedIn](https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/) or [explore my GitHub](https://github.com/TalhaRehmanMTRKT) to learn more about my projects and contributions.
 
 
