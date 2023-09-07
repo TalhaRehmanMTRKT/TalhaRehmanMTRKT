@@ -17,6 +17,7 @@
 ## 🚀 Main Projects
 
 - Agent-based Grid Operation [In Progress]
+- [Microgrid Operation](https://github.com/TalhaRehmanMTRKT/MicrogridOptimization)
 - [LSTM for Flood and Drought Forecasting](https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting)
 - [Vending Machine Prototype with Microcontroller](https://github.com/TalhaRehmanMTRKT/Vending_Machine)
 
