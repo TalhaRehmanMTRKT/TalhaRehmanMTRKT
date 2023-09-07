@@ -22,7 +22,7 @@
 
 ## 📚 My Journey
 
-I'm a Master's student at Incheon National University, South Korea at the [Power and Renewable Energy Lab](https://hvdcmicrogrid.wixsite.com/powerlab).
+I'm a Master's student at Incheon National University, South Korea ---  [Power and Renewable Energy Lab](https://hvdcmicrogrid.wixsite.com/powerlab).
 
 😄 I'm passionate about Deep Learning and its applications.
 
