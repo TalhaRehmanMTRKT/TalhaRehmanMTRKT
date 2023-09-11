@@ -12,7 +12,7 @@
 ## 🔭 I’m currently working on
 
 - Deep Reinforcement learning applied to Energy Systems
-- Microgrid Optimization
+- Microgrid Operation
 
 ## 🚀 Main Projects
 
