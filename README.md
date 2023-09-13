@@ -31,10 +31,6 @@ I'm a Master's student at Incheon National University, South Korea ---  [Power a
 
 🌐 I'm deeply passionate about contributing to the open-source projects
 
-<div align="center">
-  <img alt="Talha's GitHub Stats" src="https://github-readme-stats.vercel.app/api?username=TalhaRehmanMTRKT&show_icons=true&count_private=true&theme=material-palenight&border_radius=8" width="49%">
-  <img alt="Top Languages" src="https://github-readme-stats.vercel.app/api/top-langs/?username=TalhaRehmanMTRKT&count_private=true&theme=material-palenight&border_radius=8&hide=TeX,HTML,javascript,Procfile" width="49%">
-</div>
 
 
 
