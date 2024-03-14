@@ -1,4 +1,4 @@
-<h1 align="center">Hello there! 👋 I'm Talha Rehman</h1>
+<h1 align="center">Hello there! 👋 I'm Talha Rehman Khan</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Masters%20Student-Electrical%20Engineering-blue" alt="Student Status">
