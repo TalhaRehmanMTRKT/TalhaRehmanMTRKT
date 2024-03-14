@@ -32,12 +32,6 @@ I'm a Master's student at Incheon National University, South Korea ---  [Power a
 🌐 I'm deeply passionate about contributing to the open-source projects
 
 
-![Contributions](https://img.shields.io/github/contributions/username)
-![Followers](https://img.shields.io/github/followers/username?label=Followers)
-![Stars](https://img.shields.io/github/stars/username?style=social)
-![Profile Views](https://komarev.com/ghpvc/?username=username&color=blue)
-
-
 ## CV
 
 ## 💬 Let's Connect
