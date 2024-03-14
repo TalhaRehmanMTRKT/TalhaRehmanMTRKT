@@ -1,4 +1,4 @@
-<h1 align="center">Hello there! 👋 I'm Talha Rehman Khan</h1>
+<h1 align="center">Hello there! 👋 I'm Talha Rehman</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Masters%20Student-Electrical%20Engineering-blue" alt="Student Status">
@@ -31,6 +31,8 @@ I'm a Master's student at Incheon National University, South Korea ---  [Power a
 
 🌐 I'm deeply passionate about contributing to the open-source projects
 
+
+![image](https://github.com/TalhaRehmanMTRKT/TalhaRehmanMTRKT/assets/109908732/7c7cc481-969e-4806-b83c-b3c1c3f05198)
 
 ## CV
 
