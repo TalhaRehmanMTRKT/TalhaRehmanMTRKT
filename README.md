@@ -17,13 +17,14 @@
   <p>
     <a href="https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/" target="_blank"><img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin&logoColor=white&style=flat-square" alt="LinkedIn"></a>
     <a href="https://github.com/TalhaRehmanMTRKT" target="_blank"><img src="https://img.shields.io/badge/GitHub-Follow-181717?logo=github&style=flat-square" alt="GitHub"></a>
+    <a href="https://medium.com/@talharehman.mtrkt" target="_blank"><img src="https://img.shields.io/badge/Medium-Follow-lightgrey?logo=medium&style=flat-square" alt="Medium"></a>
   </p>
 </header>
 
 <section id="currently-working">
   <h2>I’m currently working on</h2>
   <ul>
-    <li>Deep Reinforcement learning applied to Energy Systems</li>
+    <li>Deep Reinforcement Learning Applied to Energy Systems</li>
     <li>Microgrid Operation</li>
   </ul>
 </section>
@@ -32,6 +33,7 @@
   <h2>Main Projects</h2>
   <ul>
     <li>Agent-based Grid Operation [In Progress]</li>
+    <li><a href="https://github.com/TalhaRehmanMTRKT/OptimalOperations">Blog Series Code</a></li>
     <li><a href="https://github.com/TalhaRehmanMTRKT/MicrogridOptimization">Microgrid Operation</a></li>
     <li><a href="https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting">LSTM for Flood and Drought Forecasting</a></li>
     <li><a href="https://github.com/TalhaRehmanMTRKT/Vending_Machine">Vending Machine Prototype with Microcontroller</a></li>
@@ -50,7 +52,7 @@
     🌱 I’m always learning and exploring new avenues in Electrical Engineering.
   </p>
   <p>
-    🌐 I'm deeply passionate about contributing to the open-source projects
+    🌐 I'm deeply passionate about contributing to open-source projects.
   </p>
   <img src="assets/109908732/7c7cc481-969e-4806-b83c-b3c1c3f05198" alt="Image">
 </section>
@@ -60,9 +62,18 @@
   <!-- Include your CV content here -->
 </section>
 
+<section id="medium-blog">
+  <h2>Medium Blog Series</h2>
+  <p>In my series of blog posts, I delve into the concepts and mathematical modeling of energy system problems centered around the topic of "Optimal Operations." 
+Each blog post also contains practical implementation guidance using C++/Cplex. I strive to present fundamental concepts and code snippets to improve understanding.
+Moreover, I share the challenges, errors, and mistakes that I encountered during coding, considering them valuable learning opportunities.</p>
+  
+  <p>Explore my Medium blog <a href="https://medium.com/@talharehman.mtrkt" target="_blank">here</a>.</p>
+</section>
+
 <footer>
   <h2>Let's Connect</h2>
-  <p>I'm always open to connecting with fellow researchers, engineers, and deep learning enthusiasts. Feel free to <a href="https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/" target="_blank">reach out on LinkedIn</a> or <a href="https://github.com/TalhaRehmanMTRKT" target="_blank">explore my GitHub</a> to learn more about my projects and contributions.</p>
+  <p>I'm always open to connecting with fellow researchers, engineers, and deep learning enthusiasts. Feel free to <a href="https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/" target="_blank">reach out on LinkedIn</a>, <a href="https://github.com/TalhaRehmanMTRKT" target="_blank">explore my GitHub</a>, or <a href="https://medium.com/@talharehman.mtrkt" target="_blank">read my Medium blogs</a> to learn more about my projects and contributions.</p>
 </footer>
 
 </body>
