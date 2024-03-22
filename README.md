@@ -54,13 +54,9 @@
   <p>
     🌐 I'm deeply passionate about contributing to open-source projects.
   </p>
-  <img src="assets/109908732/7c7cc481-969e-4806-b83c-b3c1c3f05198" alt="Image">
+   <img src="https://github.com/TalhaRehmanMTRKT/TalhaRehmanMTRKT/assets/109908732/008e1ebb-27cc-4321-960e-356360e91eab" alt="Github Achievements">
 </section>
 
-<section id="cv">
-  <h2>CV</h2>
-  <!-- Include your CV content here -->
-</section>
 
 <section id="medium-blog">
   <h2>Medium Blog Series</h2>
@@ -69,6 +65,11 @@ Each blog post also contains practical implementation guidance using C++/Cplex. 
 Moreover, I share the challenges, errors, and mistakes that I encountered during coding, considering them valuable learning opportunities.</p>
   
   <p>Explore my Medium blog <a href="https://medium.com/@talharehman.mtrkt" target="_blank">here</a>.</p>
+</section>
+
+<section id="cv">
+  <h2>CV</h2>
+  Download my CV here
 </section>
 
 <footer>
