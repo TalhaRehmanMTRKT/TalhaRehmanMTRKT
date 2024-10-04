@@ -20,15 +20,6 @@
   </p>
 </header>
 
-<section id="currently-working">
-  <h2>I’m currently working on</h2>
-  <ul>
-    <li>Deep Reinforcement Learning Applied to Energy Systems</li>
-    <li>Microgrid Operation</li>
-  </ul>
-</section>
-
-
 <section id="publications">
   <h2>My Publications</h2>
   
@@ -38,49 +29,6 @@
 
 </section>
   
-
-<section id="main-projects">
-  <h2>Main Projects</h2>
-  <ul>
-    <li>Agent-based Grid Operation [In Progress]</li>
-    <li><a href="https://github.com/TalhaRehmanMTRKT/OptimalOperations">Blog Series Code</a></li>
-    <li><a href="https://github.com/TalhaRehmanMTRKT/MicrogridOptimization">Microgrid Operation</a></li>
-    <li><a href="https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting">LSTM for Flood and Drought Forecasting</a></li>
-    <li><a href="https://github.com/TalhaRehmanMTRKT/Vending_Machine">Vending Machine Prototype with Microcontroller</a></li>
-  </ul>
-</section>
-
-<section id="education-and-journey">
-  <h2>My Journey</h2>
-  <p>
-    I'm a Master's student at Incheon National University, South Korea --- <a href="https://hvdcmicrogrid.wixsite.com/powerlab">Power and Renewable Energy Lab</a>.
-  </p>
-  <p>
-    😄 I'm passionate about Deep Learning and its applications.
-  </p>
-  <p>
-    🌱 I’m always learning and exploring new avenues in Electrical Engineering.
-  </p>
-  <p>
-    🌐 I'm deeply passionate about contributing to open-source projects.
-  </p>
-   <img src="https://github.com/TalhaRehmanMTRKT/TalhaRehmanMTRKT/assets/109908732/008e1ebb-27cc-4321-960e-356360e91eab" alt="Github Achievements">
-</section>
-
-
-<section id="medium-blog">
-  <h2>Medium Blog Series</h2>
-  <p>In my series of blog posts, I delve into the concepts and mathematical modeling of energy system problems centered around the topic of "Optimal Operations." 
-Each blog post also contains practical implementation guidance using C++/Cplex. I strive to present fundamental concepts and code snippets to improve understanding.
-Moreover, I share the challenges, errors, and mistakes that I encountered during coding, considering them valuable learning opportunities.</p>
-  
-  <p>Explore my Medium blog <a href="https://medium.com/@talharehman.mtrkt" target="_blank">here</a>.</p>
-</section>
-
-<section id="cv">
-  <h2>CV</h2>
-  Download my CV here
-</section>
 
 <section id="languages">
   <h2>Languages and Tools</h2>
@@ -132,6 +80,61 @@ Moreover, I share the challenges, errors, and mistakes that I encountered during
       <img src="https://img.shields.io/badge/Assembly-6E4C13?style=flat" alt="Assembly Icon" style="vertical-align: middle;"> Assembly
     </li>
   </ul>
+</section>
+
+
+<section id="main-projects">
+  <h2>Main Projects</h2>
+  <ul>
+    <li>Agent-based Grid Operation [In Progress]</li>
+    <li><a href="https://github.com/TalhaRehmanMTRKT/OptimalOperations">Blog Series Code</a></li>
+    <li><a href="https://github.com/TalhaRehmanMTRKT/MicrogridOptimization">Microgrid Operation</a></li>
+    <li><a href="https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting">LSTM for Flood and Drought Forecasting</a></li>
+    <li><a href="https://github.com/TalhaRehmanMTRKT/Vending_Machine">Vending Machine Prototype with Microcontroller</a></li>
+  </ul>
+</section>
+
+
+<section id="currently-working">
+  <h2>I’m currently working on</h2>
+  <ul>
+    <li>Deep Reinforcement Learning Applied to Energy Systems</li>
+    <li>Microgrid Operation</li>
+  </ul>
+</section>
+
+
+
+<section id="education-and-journey">
+  <h2>My Journey</h2>
+  <p>
+    I'm a Master's student at Incheon National University, South Korea --- <a href="https://hvdcmicrogrid.wixsite.com/powerlab">Power and Renewable Energy Lab</a>.
+  </p>
+  <p>
+    😄 I'm passionate about Deep Learning and its applications.
+  </p>
+  <p>
+    🌱 I’m always learning and exploring new avenues in Electrical Engineering.
+  </p>
+  <p>
+    🌐 I'm deeply passionate about contributing to open-source projects.
+  </p>
+   <img src="https://github.com/TalhaRehmanMTRKT/TalhaRehmanMTRKT/assets/109908732/008e1ebb-27cc-4321-960e-356360e91eab" alt="Github Achievements">
+</section>
+
+
+<section id="medium-blog">
+  <h2>Medium Blog Series</h2>
+  <p>In my series of blog posts, I delve into the concepts and mathematical modeling of energy system problems centered around the topic of "Optimal Operations." 
+Each blog post also contains practical implementation guidance using C++/Cplex. I strive to present fundamental concepts and code snippets to improve understanding.
+Moreover, I share the challenges, errors, and mistakes that I encountered during coding, considering them valuable learning opportunities.</p>
+  
+  <p>Explore my Medium blog <a href="https://medium.com/@talharehman.mtrkt" target="_blank">here</a>.</p>
+</section>
+
+<section id="cv">
+  <h2>CV</h2>
+  Download my CV here
 </section>
 
 
