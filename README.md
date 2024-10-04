@@ -30,70 +30,42 @@
 </section>
   
 
-<section id="languages">
+<section id="languages-tools">
   <h2>Languages and Tools</h2>
   <p>Below are the main programming languages and tools I've used across my projects:</p>
   
-  <ul style="list-style-type: none; padding-left: 0;">
-    <li>
-      <span style="color: #3572A5;">●</span> 
-      <img src="https://img.shields.io/badge/Python-FFD43B?style=flat&logo=python&logoColor=darkblue" alt="Python Icon" style="vertical-align: middle;"> Python
-    </li>
-    <li>
-      <span style="color: #A8B9CC;">●</span> 
-      <img src="https://img.shields.io/badge/C-00599C?style=flat&logo=c&logoColor=white" alt="C Icon" style="vertical-align: middle;"> C
-    </li>
-    <li>
-      <span style="color: #00599C;">●</span> 
-      <img src="https://img.shields.io/badge/C++-00599C?style=flat&logo=c%2B%2B&logoColor=white" alt="C++ Icon" style="vertical-align: middle;"> C++
-    </li>
-    <li>
-      <span style="color: #282828;">●</span> 
-      <img src="https://img.shields.io/badge/CPLEX-007396?style=flat" alt="CPLEX Icon" style="vertical-align: middle;"> CPLEX
-    </li>
-    <li>
-      <span style="color: #092E20;">●</span> 
-      <img src="https://img.shields.io/badge/Django-092E20?style=flat&logo=django&logoColor=white" alt="Django Icon" style="vertical-align: middle;"> Django
-    </li>
-    <li>
-      <span style="color: #E34F26;">●</span> 
-      <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white" alt="HTML Icon" style="vertical-align: middle;"> HTML
-    </li>
-    <li>
-      <span style="color: #1572B6;">●</span> 
-      <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white" alt="CSS Icon" style="vertical-align: middle;"> CSS
-    </li>
-    <li>
-      <span style="color: #02569B;">●</span> 
-      <img src="https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white" alt="Flutter Icon" style="vertical-align: middle;"> Flutter
-    </li>
-    <li>
-      <span style="color: #007396;">●</span> 
-      <img src="https://img.shields.io/badge/Java-007396?style=flat&logo=java&logoColor=white" alt="Java Icon" style="vertical-align: middle;"> Java
-    </li>
-    <li>
-      <span style="color: #119DA4;">●</span> 
-      <img src="https://img.shields.io/badge/Dash-119DA4?style=flat&logo=plotly&logoColor=white" alt="Dash Icon" style="vertical-align: middle;"> Dash Plotly
-    </li>
-    <li>
-      <span style="color: #6E4C13;">●</span> 
-      <img src="https://img.shields.io/badge/Assembly-6E4C13?style=flat" alt="Assembly Icon" style="vertical-align: middle;"> Assembly
-    </li>
-  </ul>
+  <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+    <!-- Programming Languages -->
+    <img src="https://img.shields.io/badge/Python-FFD43B?style=flat&logo=python&logoColor=darkblue" alt="Python Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/C-00599C?style=flat&logo=c&logoColor=white" alt="C Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/C++-00599C?style=flat&logo=c%2B%2B&logoColor=white" alt="C++ Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/CPLEX-007396?style=flat" alt="CPLEX Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/Assembly-6E4C13?style=flat" alt="Assembly Icon" style="width: 100px;">
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+    <img src="https://img.shields.io/badge/Django-092E20?style=flat&logo=django&logoColor=white" alt="Django Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white" alt="Flutter Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=flat&logo=pytorch&logoColor=white" alt="PyTorch Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=flat&logo=tensorflow&logoColor=white" alt="TensorFlow Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/Dash-119DA4?style=flat&logo=plotly&logoColor=white" alt="Dash Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white" alt="HTML Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white" alt="CSS Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/Java-007396?style=flat&logo=java&logoColor=white" alt="Java Icon" style="width: 80px;">
+  </div>
+  
+
+  <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px;">
+    <img src="https://img.shields.io/badge/PyCharm-000000?style=flat&logo=pycharm&logoColor=white" alt="Pycharm Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="Github Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/Proteus-3B3A38?style=flat&logo=proteus&logoColor=white" alt="Proteus Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/VS%20Code-007ACC?style=flat&logo=visual-studio-code&logoColor=white" alt="VSCode Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/MATLAB-0076A8?style=flat&logo=matlab&logoColor=white" alt="MATLAB Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/Visual%20Studio-5C2D91?style=flat&logo=visual-studio&logoColor=white" alt="Visual Studio Icon" style="width: 100px;">
+    <img src="https://img.shields.io/badge/LINGO-000000?style=flat" alt="LINGO Icon" style="width: 100px;">
+  </div>
 </section>
 
-<section id="tools">
-  <h2>Tools</h2>
-  <p style="display: flex; gap: 15px;">
-    <img src="https://img.shields.io/badge/Proteus-3B3A38?style=flat&logo=proteus&logoColor=white" alt="Proteus Icon">
-    <img src="https://img.shields.io/badge/PyCharm-000000?style=flat&logo=pycharm&logoColor=white" alt="Pycharm Icon">
-    <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="Github Icon">
-    <img src="https://img.shields.io/badge/VS%20Code-007ACC?style=flat&logo=visual-studio-code&logoColor=white" alt="VSCode Icon">
-    <img src="https://img.shields.io/badge/MATLAB-0076A8?style=flat&logo=matlab&logoColor=white" alt="MATLAB Icon">
-    <img src="https://img.shields.io/badge/Visual%20Studio-5C2D91?style=flat&logo=visual%20studio&logoColor=white" alt="Visual Studio Icon">
-    <img src="https://img.shields.io/badge/LINGO-000000?style=flat&logo=lingo&logoColor=white" alt="LINGO Icon">
-  </p>
-</section>
 
 
 <section id="main-projects">
