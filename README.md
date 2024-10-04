@@ -82,6 +82,19 @@
   </ul>
 </section>
 
+<section id="tools">
+  <h2>Tools</h2>
+  <p style="display: flex; gap: 15px;">
+    <img src="https://img.shields.io/badge/Proteus-3B3A38?style=flat&logo=proteus&logoColor=white" alt="Proteus Icon">
+    <img src="https://img.shields.io/badge/PyCharm-000000?style=flat&logo=pycharm&logoColor=white" alt="Pycharm Icon">
+    <img src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white" alt="Github Icon">
+    <img src="https://img.shields.io/badge/VS%20Code-007ACC?style=flat&logo=visual-studio-code&logoColor=white" alt="VSCode Icon">
+    <img src="https://img.shields.io/badge/MATLAB-0076A8?style=flat&logo=matlab&logoColor=white" alt="MATLAB Icon">
+    <img src="https://img.shields.io/badge/Visual%20Studio-5C2D91?style=flat&logo=visual%20studio&logoColor=white" alt="Visual Studio Icon">
+    <img src="https://img.shields.io/badge/LINGO-000000?style=flat&logo=lingo&logoColor=white" alt="LINGO Icon">
+  </p>
+</section>
+
 
 <section id="main-projects">
   <h2>Main Projects</h2>
