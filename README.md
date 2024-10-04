@@ -84,12 +84,54 @@ Moreover, I share the challenges, errors, and mistakes that I encountered during
 
 <section id="languages">
   <h2>Languages and Tools</h2>
-  <p>
-    Below is a chart showing the top 6 programming languages I've used across my GitHub repositories.
-  </p>
-  <p>
-    <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=TalhaRehmanMTRKT&layout=compact&hide=jupyter%20notebook,Procfile&langs_count=6" alt="Top 6 Programming Languages in My Repositories">
-  </p>
+  <p>Below are the main programming languages and tools I've used across my projects:</p>
+  
+  <ul style="list-style-type: none; padding-left: 0;">
+    <li>
+      <span style="color: #3572A5;">●</span> 
+      <img src="https://img.shields.io/badge/Python-FFD43B?style=flat&logo=python&logoColor=darkblue" alt="Python Icon" style="vertical-align: middle;"> Python
+    </li>
+    <li>
+      <span style="color: #A8B9CC;">●</span> 
+      <img src="https://img.shields.io/badge/C-00599C?style=flat&logo=c&logoColor=white" alt="C Icon" style="vertical-align: middle;"> C
+    </li>
+    <li>
+      <span style="color: #00599C;">●</span> 
+      <img src="https://img.shields.io/badge/C++-00599C?style=flat&logo=c%2B%2B&logoColor=white" alt="C++ Icon" style="vertical-align: middle;"> C++
+    </li>
+    <li>
+      <span style="color: #282828;">●</span> 
+      <img src="https://img.shields.io/badge/CPLEX-007396?style=flat" alt="CPLEX Icon" style="vertical-align: middle;"> CPLEX
+    </li>
+    <li>
+      <span style="color: #092E20;">●</span> 
+      <img src="https://img.shields.io/badge/Django-092E20?style=flat&logo=django&logoColor=white" alt="Django Icon" style="vertical-align: middle;"> Django
+    </li>
+    <li>
+      <span style="color: #E34F26;">●</span> 
+      <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white" alt="HTML Icon" style="vertical-align: middle;"> HTML
+    </li>
+    <li>
+      <span style="color: #1572B6;">●</span> 
+      <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white" alt="CSS Icon" style="vertical-align: middle;"> CSS
+    </li>
+    <li>
+      <span style="color: #02569B;">●</span> 
+      <img src="https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white" alt="Flutter Icon" style="vertical-align: middle;"> Flutter
+    </li>
+    <li>
+      <span style="color: #007396;">●</span> 
+      <img src="https://img.shields.io/badge/Java-007396?style=flat&logo=java&logoColor=white" alt="Java Icon" style="vertical-align: middle;"> Java
+    </li>
+    <li>
+      <span style="color: #119DA4;">●</span> 
+      <img src="https://img.shields.io/badge/Dash-119DA4?style=flat&logo=plotly&logoColor=white" alt="Dash Icon" style="vertical-align: middle;"> Dash Plotly
+    </li>
+    <li>
+      <span style="color: #6E4C13;">●</span> 
+      <img src="https://img.shields.io/badge/Assembly-6E4C13?style=flat" alt="Assembly Icon" style="vertical-align: middle;"> Assembly
+    </li>
+  </ul>
 </section>
 
 
