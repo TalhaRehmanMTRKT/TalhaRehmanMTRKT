@@ -82,6 +82,20 @@ Moreover, I share the challenges, errors, and mistakes that I encountered during
   Download my CV here
 </section>
 
+<section id="languages">
+  <h2>Languages and Tools</h2>
+  <p>
+    Below is a chart showing the top 6 programming languages I've used across my GitHub repositories.
+  </p>
+  <p>
+    <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=TalhaRehmanMTRKT&layout=compact&hide=jupyter%20notebook,Procfile&langs_count=6" alt="Top 6 Programming Languages in My Repositories">
+  </p>
+</section>
+
+
+
+
+
 <footer>
   <h2>Let's Connect</h2>
   <p>I'm always open to connecting with fellow researchers, engineers, and deep learning enthusiasts. Feel free to <a href="https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/" target="_blank">reach out on LinkedIn</a>, <a href="https://github.com/TalhaRehmanMTRKT" target="_blank">explore my GitHub</a>, or <a href="https://medium.com/@talharehman.mtrkt" target="_blank">read my Medium blogs</a> to learn more about my projects and contributions.</p>
