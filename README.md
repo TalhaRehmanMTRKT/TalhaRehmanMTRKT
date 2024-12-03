@@ -22,10 +22,12 @@
 
 <section id="publications">
   <h2>My Publications</h2>
-  
+
+  - M.A. Khan, T. Rehman, H.-M. Kim, Optimal operation of hydrogen-based multi-energy microgrid integrating water network and transportation sector, International Journal of Hydrogen Energy 97 (2025) 501–515. https://doi.org/10.1016/j.ijhydene.2024.11.367.
+  - M.A. Khan, T. Rehman, A. Hussain, H.-M. Kim, Day-ahead operation of a multi-energy microgrid community with shared hybrid energy storage and EV integration, Journal of Energy Storage 97 (2024) 112855. https://doi.org/10.1016/j.est.2024.112855.
   - Rehman, T., Khan, M.A., Hussain, A., Kim, H.-M., 2024. Optimal sizing of multi-energy microgrid with electric vehicle integration: Considering carbon emission and resilience load. Energy Reports 11, 4192–4212. https://doi.org/10.1016/j.egyr.2024.04.001
 
-  - M.A. Khan, T. Rehman, A. Hussain, H.-M. Kim, Day-ahead operation of a multi-energy microgrid community with shared hybrid energy storage and EV integration, Journal of Energy Storage 97 (2024) 112855. https://doi.org/10.1016/j.est.2024.112855.
+
 
 </section>
   
