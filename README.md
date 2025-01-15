@@ -31,6 +31,15 @@
 
 
 </section>
+
+<section id="medium-blog">
+  <h2>Medium Blog Series</h2>
+  <p>In my series of blog posts, I delve into the concepts and mathematical modeling of energy system problems centered around the topic of "Optimal Operations." 
+Each blog post also contains practical implementation guidance using C++/Cplex. I strive to present fundamental concepts and code snippets to improve understanding.
+Moreover, I share the challenges, errors, and mistakes that I encountered during coding, considering them valuable learning opportunities.</p>
+  
+  <p>Explore my Medium blog <a href="https://medium.com/@talharehman.mtrkt" target="_blank">here</a>.</p>
+</section>
   
 
 <section id="languages-tools">
@@ -111,14 +120,7 @@
 </section>
 
 
-<section id="medium-blog">
-  <h2>Medium Blog Series</h2>
-  <p>In my series of blog posts, I delve into the concepts and mathematical modeling of energy system problems centered around the topic of "Optimal Operations." 
-Each blog post also contains practical implementation guidance using C++/Cplex. I strive to present fundamental concepts and code snippets to improve understanding.
-Moreover, I share the challenges, errors, and mistakes that I encountered during coding, considering them valuable learning opportunities.</p>
-  
-  <p>Explore my Medium blog <a href="https://medium.com/@talharehman.mtrkt" target="_blank">here</a>.</p>
-</section>
+
 
 <section id="cv">
   <h2>CV</h2>
