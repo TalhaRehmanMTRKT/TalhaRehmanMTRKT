@@ -65,21 +65,6 @@ Each post includes practical implementation guidance using C++/CPLEX, fundamenta
 
 ---
 
-## 📊 GitHub Stats
-<p align="center">
-  <!-- First Row: Side by Side Cards -->
-  <img width="48%" src="https://github-readme-stats.vercel.app/api?username=TalhaRehmanMTRKT&show_icons=true&theme=tokyonight&count_private=true&hide_rank=false" />
-  <img width="34%" src="https://github-profile-summary-cards.vercel.app/api/cards/repos-per-language?username=TalhaRehmanMTRKT&theme=tokyonight" />
-</p>
-
-<p align="center">
-  <!-- Second Row: Full Width Card -->
-  <img width="82%" src="https://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=TalhaRehmanMTRKT&theme=tokyonight" />
-</p>
-
-
----
-
 <footer>
   <h2>Let's Connect</h2>
   <p>I'm always open to connecting with fellow researchers, engineers, and deep learning enthusiasts. Feel free to <a href="https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/" target="_blank">reach out on LinkedIn</a>, <a href="https://github.com/TalhaRehmanMTRKT" target="_blank">explore my GitHub</a>, or <a href="https://medium.com/@talharehman.mtrkt" target="_blank">read my Medium blogs</a> to learn more about my projects and contributions.</p>
