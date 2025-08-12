@@ -21,14 +21,15 @@
 </header>
 
 ## 📚 Publications
+1. M.A. Khan, **T. Rehman**, H.-M. Kim, Hierarchical energy management for heterogeneous multi-energy microgrid community: Integrating hydrogen into the water-energy nexus, Applied Energy 397 (2025) 126254. https://doi.org/10.1016/j.apenergy.2025.126254.
 
-1. **T. Rehman**, M.A. Khan, H.-M. Kim, "Research on optimal design of multi-energy microgrid considering hybrid resilience load management and Carbon emissions," *Sustainable Cities and Society*, 119 (2025) 106108. [DOI](https://doi.org/10.1016/j.scs.2024.106108)
+2. **T. Rehman**, M.A. Khan, H.-M. Kim, "Research on optimal design of multi-energy microgrid considering hybrid resilience load management and Carbon emissions," *Sustainable Cities and Society*, 119 (2025) 106108. [DOI](https://doi.org/10.1016/j.scs.2024.106108)
 
-2. M.A. Khan, **T. Rehman**, H.-M. Kim, "Optimal operation of hydrogen-based multi-energy microgrid integrating water network and transportation sector," *International Journal of Hydrogen Energy*, 97 (2025) 501–515. [DOI](https://doi.org/10.1016/j.ijhydene.2024.11.367)
+3. M.A. Khan, **T. Rehman**, H.-M. Kim, "Optimal operation of hydrogen-based multi-energy microgrid integrating water network and transportation sector," *International Journal of Hydrogen Energy*, 97 (2025) 501–515. [DOI](https://doi.org/10.1016/j.ijhydene.2024.11.367)
 
-3. M.A. Khan, **T. Rehman**, A. Hussain, H.-M. Kim, "Day-ahead operation of a multi-energy microgrid community with shared hybrid energy storage and EV integration," *Journal of Energy Storage*, 97 (2024) 112855. [DOI](https://doi.org/10.1016/j.est.2024.112855)
+4. M.A. Khan, **T. Rehman**, A. Hussain, H.-M. Kim, "Day-ahead operation of a multi-energy microgrid community with shared hybrid energy storage and EV integration," *Journal of Energy Storage*, 97 (2024) 112855. [DOI](https://doi.org/10.1016/j.est.2024.112855)
 
-4. **T. Rehman**, M.A. Khan, A. Hussain, H.-M. Kim, "Optimal sizing of multi-energy microgrid with electric vehicle integration: Considering carbon emission and resilience load," *Energy Reports*, 11 (2024) 4192–4212. [DOI](https://doi.org/10.1016/j.egyr.2024.04.001)
+5. **T. Rehman**, M.A. Khan, A. Hussain, H.-M. Kim, "Optimal sizing of multi-energy microgrid with electric vehicle integration: Considering carbon emission and resilience load," *Energy Reports*, 11 (2024) 4192–4212. [DOI](https://doi.org/10.1016/j.egyr.2024.04.001)
 
 ---
 
