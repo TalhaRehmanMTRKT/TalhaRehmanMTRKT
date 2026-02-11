@@ -39,7 +39,7 @@
 - 💻 [Blog Series Code](https://github.com/TalhaRehmanMTRKT/OptimalOperations)
 - 🔋 [Microgrid Operation](https://github.com/TalhaRehmanMTRKT/MicrogridOptimization)
 - 🌊 [LSTM for Flood and Drought Forecasting](https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting)
-- 🤖 [Vending Machine with Microcontroller](https://github.com/TalhaRehmanMTRKT/Vending_Machine)
+- Black Hole of Repos https://github.com/TalhaRehmanMTRKT/trk-blackhole
 
 ---
 
