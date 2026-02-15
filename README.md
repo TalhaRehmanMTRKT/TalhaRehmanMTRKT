@@ -1,6 +1,6 @@
-<p align="center">
+<!-- <p align="center">
   <img src="https://github.com/TalhaRehmanMTRKT.png" width="140" style="border-radius:50%" alt="Talha Rehman">
-</p>
+</p> -->
 
 <h1 align="center">Talha Rehman</h1>
 
