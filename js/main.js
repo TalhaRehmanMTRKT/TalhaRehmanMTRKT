@@ -17,6 +17,14 @@
   function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem(THEME_KEY, theme);
+
+    // Sync highlight.js theme sheets on post page
+    var hljsLight = document.getElementById('hljs-light');
+    var hljsDark = document.getElementById('hljs-dark');
+    if (hljsLight && hljsDark) {
+      hljsLight.disabled = (theme === 'dark');
+      hljsDark.disabled = (theme !== 'dark');
+    }
   }
 
   function toggleTheme() {
