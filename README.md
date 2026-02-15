@@ -1,27 +1,28 @@
+<p align="center">
+  <img src="https://github.com/TalhaRehmanMTRKT.png" width="140" style="border-radius:50%" alt="Talha Rehman">
+</p>
 
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<h1 align="center">Talha Rehman</h1>
 
-<header>
-  <h1>Hello there! 👋 I'm Talha Rehman</h1>
-  <p>
-    <img src="https://img.shields.io/badge/PhD%20Student-Electrical%20Engineering-blue" alt="Student Status">
-    <img src="https://img.shields.io/badge/Location-South%20Korea-green" alt="Location">
-  </p>
-  <p>
-    <a href="https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/" target="_blank"><img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin&logoColor=white&style=flat-square" alt="LinkedIn"></a>
-    <a href="https://github.com/TalhaRehmanMTRKT" target="_blank"><img src="https://img.shields.io/badge/GitHub-Follow-181717?logo=github&style=flat-square" alt="GitHub"></a>
-    <a href="https://medium.com/@talharehman.mtrkt" target="_blank"><img src="https://img.shields.io/badge/Medium-Follow-lightgrey?logo=medium&style=flat-square" alt="Medium"></a>
-  </p>
-</header>
+<p align="center">
+  <img src="https://img.shields.io/badge/PhD%20Student-Electrical%20Engineering-blue" alt="PhD Student">
+  <img src="https://img.shields.io/badge/Location-South%20Korea-green" alt="Location">
+</p>
+
+<p align="center">
+  <a href="https://talharehmanmtrkt.github.io/TalhaRehmanMTRKT/"><img src="https://img.shields.io/badge/🌐%20Portfolio-Website-0078D4?style=flat-square" alt="Website"></a>
+  <a href="https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/"><img src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin&logoColor=white&style=flat-square" alt="LinkedIn"></a>
+  <a href="https://github.com/TalhaRehmanMTRKT"><img src="https://img.shields.io/badge/GitHub-Follow-181717?logo=github&style=flat-square" alt="GitHub"></a>
+  <a href="https://scholar.google.com/citations?user=j_AybA4AAAAJ&hl=ko"><img src="https://img.shields.io/badge/Google%20Scholar-Profile-4285F4?logo=google-scholar&logoColor=white&style=flat-square" alt="Google Scholar"></a>
+</p>
+
+PhD student at Incheon National University, South Korea. Researching optimal design and operation of multi-energy microgrids with interests in deep learning, energy systems optimization, and agent-based modeling.
+
+---
 
 ## 📚 Publications
-1. M.A. Khan, **T. Rehman**, H.-M. Kim, Hierarchical energy management for heterogeneous multi-energy microgrid community: Integrating hydrogen into the water-energy nexus, Applied Energy 397 (2025) 126254. https://doi.org/10.1016/j.apenergy.2025.126254.
+
+1. M.A. Khan, **T. Rehman**, H.-M. Kim, "Hierarchical energy management for heterogeneous multi-energy microgrid community: Integrating hydrogen into the water-energy nexus," *Applied Energy*, 397 (2025) 126254. [DOI](https://doi.org/10.1016/j.apenergy.2025.126254)
 
 2. **T. Rehman**, M.A. Khan, H.-M. Kim, "Research on optimal design of multi-energy microgrid considering hybrid resilience load management and Carbon emissions," *Sustainable Cities and Society*, 119 (2025) 106108. [DOI](https://doi.org/10.1016/j.scs.2024.106108)
 
@@ -35,41 +36,91 @@
 
 ## 🚀 Projects
 
-- ⚡ [Agent-based Grid Operation](#) *(In Progress)*
-- 💻 [Blog Series Code](https://github.com/TalhaRehmanMTRKT/OptimalOperations)
-- 🔋 [Microgrid Operation](https://github.com/TalhaRehmanMTRKT/MicrogridOptimization)
-- 🌊 [LSTM for Flood and Drought Forecasting](https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting)
-- Black Hole of Repos https://github.com/TalhaRehmanMTRKT/trk-blackhole
+| | Project | Description |
+|---|---|---|
+| ⚡ | **Agent-based Grid Operation** | Multi-agent framework for distributed energy resource management *(In Progress)* |
+| 💻 | [Blog Series Code](https://github.com/TalhaRehmanMTRKT/OptimalOperations) | C++/CPLEX implementations for energy systems optimization |
+| 🔋 | [Microgrid Operation](https://github.com/TalhaRehmanMTRKT/MicrogridOptimization) | Optimal operation and design of multi-energy microgrids |
+| 🌊 | [LSTM Forecasting](https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting) | LSTM-based flood and drought time series forecasting |
+| 🕳️ | [Black Hole of Repos](https://github.com/TalhaRehmanMTRKT/trk-blackhole) | Miscellaneous code experiments and snippets |
 
 ---
 
-## ✍️ Medium Blog Series
+## 🛠️ Skills & Tools
 
-In my blog series, I delve into the concepts and mathematical modeling of energy system problems centered around "Optimal Operations."  
-Each post includes practical implementation guidance using C++/CPLEX, fundamental concepts, code snippets, and the challenges I encountered.
-
-📖 **Read more**: [Medium Blog](https://medium.com/@talharehman.mtrkt)
-
----
-
-## 🛠️ Languages and Tools
-
-| Programming Languages | Frameworks & Libraries | Tools & Platforms |
-|-----------------------|------------------------|-------------------|
-| ![Python](https://img.shields.io/badge/Python-FFD43B?style=flat&logo=python&logoColor=darkblue) | ![Django](https://img.shields.io/badge/Django-092E20?style=flat&logo=django&logoColor=white) | ![PyCharm](https://img.shields.io/badge/PyCharm-000000?style=flat&logo=pycharm&logoColor=white) |
-| ![C](https://img.shields.io/badge/C-00599C?style=flat&logo=c&logoColor=white) | ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white) | ![VS Code](https://img.shields.io/badge/VS%20Code-007ACC?style=flat&logo=visual-studio-code&logoColor=white) |
-| ![C++](https://img.shields.io/badge/C++-00599C?style=flat&logo=c%2B%2B&logoColor=white) | ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat&logo=pytorch&logoColor=white) | ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91?style=flat&logo=visual-studio&logoColor=white) |
-| ![Java](https://img.shields.io/badge/Java-007396?style=flat&logo=java&logoColor=white) | ![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=flat&logo=tensorflow&logoColor=white) | ![MATLAB](https://img.shields.io/badge/MATLAB-0076A8?style=flat&logo=matlab&logoColor=white) |
-| ![Assembly](https://img.shields.io/badge/Assembly-6E4C13?style=flat) | ![Dash](https://img.shields.io/badge/Dash-119DA4?style=flat&logo=plotly&logoColor=white) | ![Proteus](https://img.shields.io/badge/Proteus-3B3A38?style=flat&logo=proteus&logoColor=white) |
-| ![CPLEX](https://img.shields.io/badge/CPLEX-007396?style=flat) | ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white) | ![LINGO](https://img.shields.io/badge/LINGO-000000?style=flat) |
-|                       | ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white) | ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white) |
+| Category | Technologies |
+|---|---|
+| **Languages** | ![Python](https://img.shields.io/badge/Python-FFD43B?style=flat&logo=python&logoColor=darkblue) ![C](https://img.shields.io/badge/C-00599C?style=flat&logo=c&logoColor=white) ![C++](https://img.shields.io/badge/C++-00599C?style=flat&logo=c%2B%2B&logoColor=white) ![Java](https://img.shields.io/badge/Java-007396?style=flat&logo=java&logoColor=white) ![Assembly](https://img.shields.io/badge/Assembly-6E4C13?style=flat) |
+| **ML / DL** | ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat&logo=pytorch&logoColor=white) ![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=flat&logo=tensorflow&logoColor=white) |
+| **Optimization & Simulation** | ![CPLEX](https://img.shields.io/badge/CPLEX-007396?style=flat) ![LINGO](https://img.shields.io/badge/LINGO-000000?style=flat) ![MATLAB](https://img.shields.io/badge/MATLAB-0076A8?style=flat) ![RT--LAB](https://img.shields.io/badge/RT--LAB-1A1A1A?style=flat) |
+| **Hardware & Embedded** | ![OPAL--RT](https://img.shields.io/badge/OPAL--RT-ED1C24?style=flat) ![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-C51A4A?style=flat&logo=raspberry-pi&logoColor=white) ![Arduino](https://img.shields.io/badge/Arduino-00979D?style=flat&logo=arduino&logoColor=white) |
+| **Web & App** | ![Django](https://img.shields.io/badge/Django-092E20?style=flat&logo=django&logoColor=white) ![Dash](https://img.shields.io/badge/Dash-119DA4?style=flat&logo=plotly&logoColor=white) ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white) |
+| **Dev Tools** | ![VS Code](https://img.shields.io/badge/VS%20Code-007ACC?style=flat&logo=visual-studio-code&logoColor=white) ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91?style=flat&logo=visual-studio&logoColor=white) ![PyCharm](https://img.shields.io/badge/PyCharm-000000?style=flat&logo=pycharm&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white) ![Proteus](https://img.shields.io/badge/Proteus-3B3A38?style=flat) |
 
 ---
 
-<footer>
-  <h2>Let's Connect</h2>
-  <p>I'm always open to connecting with fellow researchers, engineers, and deep learning enthusiasts. Feel free to <a href="https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/" target="_blank">reach out on LinkedIn</a>, <a href="https://github.com/TalhaRehmanMTRKT" target="_blank">explore my GitHub</a>, or <a href="https://medium.com/@talharehman.mtrkt" target="_blank">read my Medium blogs</a> to learn more about my projects and contributions.</p>
-</footer>
+<p align="center">
+  <a href="https://www.linkedin.com/in/muhammad-talha-rehman-khan-tareen/">LinkedIn</a> · 
+  <a href="https://github.com/TalhaRehmanMTRKT">GitHub</a> · 
+  <a href="https://scholar.google.com/citations?user=j_AybA4AAAAJ&hl=ko">Google Scholar</a> · 
+  <a href="https://talharehmanmtrkt.github.io/TalhaRehmanMTRKT/">Portfolio Website</a>
+</p>
 
-</body>
-</html>
+<!--
+╔═══════════════════════════════════════════════════════════════════════════╗
+║  INTERNAL NOTES — Blog Management Instructions                           ║
+║  (This section is inside an HTML comment and is NOT shown publicly.)      ║
+╠═══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║  HOW TO ADD A NEW BLOG POST                                               ║
+║  ─────────────────────────────────────────────────────────────────         ║
+║                                                                           ║
+║  1. Copy  posts/template.html  →  posts/your-post-slug.html              ║
+║                                                                           ║
+║  2. Write your content using:                                             ║
+║     • HTML (headings, paragraphs, lists, tables, blockquotes, images)     ║
+║     • LaTeX math:  $...$  for inline,  $$...$$  for display equations     ║
+║     • Code blocks: <pre><code class="language-xxx">...</code></pre>     ║
+║     • Images: <img src="assets/your-image.png" alt="description">        ║
+║                                                                           ║
+║  3. Register the post in  posts/posts.json  by adding an entry:           ║
+║                                                                           ║
+║     {                                                                     ║
+║       "id": "your-post-slug",           ← must match filename (no .html)║
+║       "title": "Your Post Title",                                        ║
+║       "date": "2025-01-15",             ← YYYY-MM-DD format             ║
+║       "context": "Category Name",       ← groups posts on listing page  ║
+║       "description": "Short summary.",  ← shown on blog listing card    ║
+║       "file": "your-post-slug.html"     ← filename in posts/            ║
+║     }                                                                     ║
+║                                                                           ║
+║  NOTES:                                                                   ║
+║  • The "context" field categorises posts (e.g. "Optimization",            ║
+║    "Energy Systems", "Deep Learning"). It appears as a filter button      ║
+║    and badge, but is NOT visible in the blog post body.                    ║
+║  • Posts are sorted by date (newest first) automatically.                 ║
+║  • No build step needed — just commit and push.                           ║
+║  • KaTeX renders LaTeX; Highlight.js highlights code blocks.              ║
+║                                                                           ║
+║  PORTFOLIO WEBSITE STRUCTURE                                              ║
+║  ─────────────────────────────────────────────────────────────────         ║
+║  index.html        → About page (profile, skills, publications, edu)      ║
+║  projects.html     → Projects listing                                     ║
+║  blogs.html        → Blog listing (grouped by context/category)           ║
+║  post.html         → Blog post viewer (loads content + KaTeX + hljs)      ║
+║  css/style.css     → Global styles, font config, light/dark themes        ║
+║  js/main.js        → Theme toggle, blog loader, navigation                ║
+║  posts/posts.json  → Blog post manifest (metadata for all posts)          ║
+║  posts/*.html      → Individual blog post content files                   ║
+║  assets/           → Images for blog posts and site assets                ║
+║                                                                           ║
+║  FONT CUSTOMISATION                                                       ║
+║  Change fonts at top of css/style.css (CSS custom properties):            ║
+║    --font-heading       Site headings (Inter)                             ║
+║    --font-body          Site body text (Inter)                            ║
+║    --font-blog-title    Blog post titles (Playfair Display)               ║
+║    --font-blog-body     Blog post body (Source Serif 4)                   ║
+║    --font-code          Code blocks (JetBrains Mono)                      ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+-->
