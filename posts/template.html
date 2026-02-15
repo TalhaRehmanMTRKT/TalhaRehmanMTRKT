@@ -1,0 +1,107 @@
+<!--
+  ╔═══════════════════════════════════════════════════════════════╗
+  ║  BLOG POST TEMPLATE                                          ║
+  ║                                                               ║
+  ║  HOW TO CREATE A NEW BLOG POST:                               ║
+  ║                                                               ║
+  ║  1. Copy this file and rename it (use-dashes-like-this.html)  ║
+  ║  2. Write your content below (HTML format)                    ║
+  ║  3. Add an entry to posts/posts.json:                         ║
+  ║     {                                                         ║
+  ║       "id": "your-post-id",         ← matches filename       ║
+  ║       "title": "Your Post Title",                             ║
+  ║       "date": "2025-01-15",         ← YYYY-MM-DD format      ║
+  ║       "context": "Category Name",   ← for grouping posts     ║
+  ║       "description": "Short desc",  ← shown on blog listing  ║
+  ║       "file": "your-post-id.html"   ← this filename          ║
+  ║     }                                                         ║
+  ║                                                               ║
+  ║  FEATURES AVAILABLE:                                          ║
+  ║  • HTML headings, paragraphs, lists, tables, blockquotes      ║
+  ║  • LaTeX math: $inline$ and $$display$$ equations             ║
+  ║  • Code blocks with syntax highlighting (see example below)   ║
+  ║  • Images: <img src="assets/image.png" alt="description">    ║
+  ║                                                               ║
+  ║  NOTE: The "context" field in posts.json controls which       ║
+  ║  category this post appears under on the blog listing page.   ║
+  ║  It is NOT displayed inside the blog post content itself      ║
+  ║  (only as a small badge in the post header).                  ║
+  ╚═══════════════════════════════════════════════════════════════╝
+-->
+
+<!-- ===== YOUR POST CONTENT STARTS HERE ===== -->
+
+<p>
+  Write your introduction here. This is rendered using the blog body font
+  (Source Serif 4 by default) for comfortable reading.
+</p>
+
+<h2>Section Heading</h2>
+
+<p>
+  Regular paragraph text. You can use <strong>bold</strong>, <em>italic</em>,
+  and <a href="#">links</a> as normal HTML.
+</p>
+
+<!-- LaTeX Math Examples -->
+<h2>Math Equations</h2>
+
+<p>Inline math: The energy balance equation is $P_{in} = P_{out} + P_{loss}$.</p>
+
+<p>Display equation:</p>
+
+$$
+\min_{x} \sum_{t=1}^{T} c_t \cdot x_t \quad \text{subject to} \quad Ax \leq b
+$$
+
+<!-- Code Block Example -->
+<h2>Code Example</h2>
+
+<pre><code class="language-python">import numpy as np
+
+# Your code here
+x = np.array([1, 2, 3])
+print(f"Sum: {np.sum(x)}")
+</code></pre>
+
+<!-- Image Example -->
+<!-- <img src="assets/your-figure.png" alt="Figure description"> -->
+
+<!-- Blockquote Example -->
+<blockquote>
+  This is a highlighted note or important remark.
+</blockquote>
+
+<!-- List Example -->
+<h2>Key Points</h2>
+<ul>
+  <li>First key point</li>
+  <li>Second key point</li>
+  <li>Third key point</li>
+</ul>
+
+<!-- Table Example -->
+<h2>Comparison Table</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Method</th>
+      <th>Accuracy</th>
+      <th>Speed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Method A</td>
+      <td>95%</td>
+      <td>Fast</td>
+    </tr>
+    <tr>
+      <td>Method B</td>
+      <td>98%</td>
+      <td>Slow</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ===== YOUR POST CONTENT ENDS HERE ===== -->

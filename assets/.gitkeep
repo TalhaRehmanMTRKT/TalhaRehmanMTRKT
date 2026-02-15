@@ -1,0 +1,2 @@
+Place blog post images and other assets in this folder.
+Reference them in posts using: <img src="assets/your-image.png" alt="description">

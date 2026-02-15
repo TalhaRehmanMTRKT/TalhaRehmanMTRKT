@@ -1,0 +1,123 @@
+<!-- 
+  SAMPLE BLOG POST: Introduction to Optimization with C++/CPLEX
+  This file contains ONLY the post content (no <html>, <head>, <body> tags).
+  It is loaded into post.html which provides the layout, theme, KaTeX, and Highlight.js.
+  
+  SUPPORTED FEATURES:
+  - HTML content (headings, paragraphs, lists, images, tables, blockquotes)
+  - LaTeX math: use $...$ for inline and $$...$$ for display equations
+  - Code blocks: use <pre><code class="language-xxx">...</code></pre>
+  - Images: <img src="assets/your-image.png" alt="description">
+-->
+
+<p>
+  Optimization lies at the heart of modern engineering and operations research. In this post, 
+  I'll walk you through the fundamentals of setting up a linear programming (LP) problem 
+  using IBM's CPLEX solver with C++. Whether you're new to optimization or looking for a
+  practical reference, this guide covers the essentials.
+</p>
+
+<h2>What is Linear Programming?</h2>
+
+<p>
+  Linear programming is a mathematical method for finding the best outcome in a model
+  whose requirements are represented by linear relationships. The general form of an LP is:
+</p>
+
+$$
+\min_{x} \quad c^T x
+$$
+$$
+\text{subject to:} \quad Ax \leq b, \quad x \geq 0
+$$
+
+<p>
+  Where $c$ is the cost vector, $A$ is the constraint matrix, $b$ is the right-hand side vector,
+  and $x$ is the vector of decision variables.
+</p>
+
+<h2>Setting Up CPLEX in C++</h2>
+
+<p>
+  Before writing the optimization model, ensure that IBM CPLEX is installed and that your 
+  IDE is configured with the correct include and library paths.
+</p>
+
+<h3>A Minimal Example</h3>
+
+<p>Let's solve a simple problem:</p>
+
+$$
+\min \quad x_1 + 2x_2
+$$
+$$
+\text{s.t.} \quad x_1 + x_2 \geq 10, \quad x_1 \leq 8, \quad x_1, x_2 \geq 0
+$$
+
+<pre><code class="language-cpp">#include &lt;ilcplex/ilocplex.h&gt;
+#include &lt;iostream&gt;
+
+int main() {
+    IloEnv env;
+    try {
+        IloModel model(env);
+
+        // Decision variables
+        IloNumVar x1(env, 0, IloInfinity, ILOFLOAT, "x1");
+        IloNumVar x2(env, 0, IloInfinity, ILOFLOAT, "x2");
+
+        // Objective: minimize x1 + 2*x2
+        model.add(IloMinimize(env, x1 + 2 * x2));
+
+        // Constraints
+        model.add(x1 + x2 >= 10);
+        model.add(x1 <= 8);
+
+        // Solve
+        IloCplex cplex(model);
+        cplex.solve();
+
+        std::cout << "Optimal x1 = " << cplex.getValue(x1) << std::endl;
+        std::cout << "Optimal x2 = " << cplex.getValue(x2) << std::endl;
+        std::cout << "Objective   = " << cplex.getObjValue() << std::endl;
+
+    } catch (IloException& e) {
+        std::cerr << "CPLEX Error: " << e.getMessage() << std::endl;
+    }
+    env.end();
+    return 0;
+}
+</code></pre>
+
+<h2>Understanding the Output</h2>
+
+<p>
+  Running this program yields $x_1 = 8$ and $x_2 = 2$, with an optimal objective value of 
+  $8 + 2 \times 2 = 12$. The solver verified that this solution is globally optimal.
+</p>
+
+<blockquote>
+  <strong>Tip:</strong> Always check the CPLEX solution status using <code>cplex.getStatus()</code>
+  to confirm the solver found an optimal solution before using the results.
+</blockquote>
+
+<h2>Key Concepts</h2>
+
+<ul>
+  <li><strong>Decision Variables:</strong> The unknowns you're solving for ($x_1$, $x_2$).</li>
+  <li><strong>Objective Function:</strong> What you want to minimize or maximize.</li>
+  <li><strong>Constraints:</strong> The conditions the solution must satisfy.</li>
+  <li><strong>Feasible Region:</strong> The set of all points satisfying all constraints.</li>
+</ul>
+
+<h2>Next Steps</h2>
+
+<p>
+  In the next post, we'll extend this to mixed-integer programming (MIP) where some variables
+  are restricted to integer values — a critical technique for real-world energy system scheduling.
+</p>
+
+<p>
+  Check out the full code repository: 
+  <a href="https://github.com/TalhaRehmanMTRKT/OptimalOperations" target="_blank">OptimalOperations on GitHub</a>.
+</p>
