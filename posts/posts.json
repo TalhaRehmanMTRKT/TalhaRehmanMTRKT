@@ -1,11 +1,11 @@
 [
   {
-    "id": "introduction-to-optimization-with-cplex",
+    "id": "p1",
     "title": "Introduction to Optimization with C++/CPLEX",
     "date": "2025-06-15",
     "context": "Optimization",
     "description": "A practical guide to setting up and solving your first linear programming problem using IBM CPLEX with C++.",
-    "file": "introduction-to-optimization-with-cplex.html"
+    "file": "p1.html"
   },
   {
     "id": "understanding-microgrid-energy-management",
