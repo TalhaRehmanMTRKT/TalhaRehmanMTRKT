@@ -398,11 +398,21 @@ p {
   font-size: 1.5rem;
   letter-spacing: 0.02em;
   margin-top: 0.5rem;
-  background: linear-gradient(135deg, var(--color-primary), #e0699f);
+  color: var(--color-accent);
+}
+
+[data-theme="dark"] .hero-motto {
+  background: linear-gradient(135deg, #93c5fd, #f0abfc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  opacity: 0.92;
+}
+
+:root .hero-motto {
+  background: linear-gradient(135deg, #2563eb, #c026d3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .hero-tagline {
