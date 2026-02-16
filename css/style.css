@@ -392,6 +392,20 @@ p {
   letter-spacing: -0.02em;
 }
 
+.hero-motto {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, var(--color-primary), #e0699f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  opacity: 0.92;
+}
+
 .hero-tagline {
   font-size: var(--fs-lg);
   color: var(--color-text-secondary);
