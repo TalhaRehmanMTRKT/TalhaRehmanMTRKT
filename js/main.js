@@ -141,20 +141,21 @@
         // Sort by date descending
         posts.sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
 
-        // Get unique contexts
-        var contexts = [];
+        // Get unique keywords with counts
+        var keywordCounts = {};
         posts.forEach(function (p) {
-          if (p.context && contexts.indexOf(p.context) === -1) {
-            contexts.push(p.context);
-          }
+          var kws = p.keywords || [];
+          kws.forEach(function (kw) {
+            keywordCounts[kw] = (keywordCounts[kw] || 0) + 1;
+          });
         });
-        contexts.sort();
+        var keywords = Object.keys(keywordCounts).sort();
 
         // Build filter buttons
-        if (filtersContainer && contexts.length > 1) {
-          var filtersHtml = '<button class="filter-btn active" data-filter="all">All</button>';
-          contexts.forEach(function (ctx) {
-            filtersHtml += '<button class="filter-btn" data-filter="' + ctx + '">' + ctx + '</button>';
+        if (filtersContainer && keywords.length > 0) {
+          var filtersHtml = '<button class="filter-btn active" data-filter="all">All <span class="filter-count">' + posts.length + '</span></button>';
+          keywords.forEach(function (kw) {
+            filtersHtml += '<button class="filter-btn" data-filter="' + escapeHtml(kw) + '">' + escapeHtml(kw) + ' <span class="filter-count">' + keywordCounts[kw] + '</span></button>';
           });
           filtersContainer.innerHTML = filtersHtml;
 
@@ -176,39 +177,35 @@
   }
 
   function renderBlogPosts(posts, filter, container) {
-    var filtered = filter === 'all' ? posts : posts.filter(function (p) { return p.context === filter; });
+    var filtered = filter === 'all' ? posts : posts.filter(function (p) {
+      var kws = p.keywords || [];
+      return kws.indexOf(filter) !== -1;
+    });
 
     if (!filtered.length) {
-      container.innerHTML = '<div class="blog-empty"><div class="blog-empty-icon">📭</div><p>No posts in this category yet.</p></div>';
+      container.innerHTML = '<div class="blog-empty"><div class="blog-empty-icon">📭</div><p>No posts with this keyword yet.</p></div>';
       return;
     }
 
-    // Group by context
-    var groups = {};
+    var html = '<div class="blog-cards">';
     filtered.forEach(function (post) {
-      var ctx = post.context || 'General';
-      if (!groups[ctx]) groups[ctx] = [];
-      groups[ctx].push(post);
+      html += '<a href="post.html?id=' + encodeURIComponent(post.id) + '" class="blog-card">';
+      html += '<div class="blog-card-date">' + formatDate(post.date) + '</div>';
+      html += '<div class="blog-card-title">' + escapeHtml(post.title) + '</div>';
+      if (post.description) {
+        html += '<div class="blog-card-desc">' + escapeHtml(post.description) + '</div>';
+      }
+      var kws = post.keywords || [];
+      if (kws.length) {
+        html += '<div class="blog-card-keywords">';
+        kws.forEach(function (kw) {
+          html += '<span class="blog-card-context">' + escapeHtml(kw) + '</span>';
+        });
+        html += '</div>';
+      }
+      html += '</a>';
     });
-
-    var html = '';
-    Object.keys(groups).sort().forEach(function (ctx) {
-      html += '<div class="blog-category-section">';
-      html += '<h3 class="blog-category-title">' + escapeHtml(ctx);
-      html += ' <span class="blog-category-count">' + groups[ctx].length + '</span></h3>';
-      html += '<div class="blog-cards">';
-      groups[ctx].forEach(function (post) {
-        html += '<a href="post.html?id=' + encodeURIComponent(post.id) + '" class="blog-card">';
-        html += '<div class="blog-card-date">' + formatDate(post.date) + '</div>';
-        html += '<div class="blog-card-title">' + escapeHtml(post.title) + '</div>';
-        if (post.description) {
-          html += '<div class="blog-card-desc">' + escapeHtml(post.description) + '</div>';
-        }
-        html += '<span class="blog-card-context">' + escapeHtml(post.context || 'General') + '</span>';
-        html += '</a>';
-      });
-      html += '</div></div>';
-    });
+    html += '</div>';
 
     container.innerHTML = html;
   }
@@ -243,10 +240,15 @@
         // Render header
         if (titleEl) titleEl.textContent = post.title;
         if (metaEl) {
-          metaEl.innerHTML =
-            '<span>' + formatDate(post.date) + '</span>' +
-            '<span class="post-meta-divider"></span>' +
-            '<span class="post-context-badge">' + escapeHtml(post.context || 'General') + '</span>';
+          var metaHtml = '<span>' + formatDate(post.date) + '</span>';
+          var kws = post.keywords || [];
+          if (kws.length) {
+            metaHtml += '<span class="post-meta-divider"></span>';
+            kws.forEach(function (kw) {
+              metaHtml += '<span class="post-context-badge">' + escapeHtml(kw) + '</span> ';
+            });
+          }
+          metaEl.innerHTML = metaHtml;
         }
 
         // Fetch post content
