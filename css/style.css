@@ -393,10 +393,9 @@ p {
 }
 
 .hero-motto {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-style: italic;
+  font-family: 'Great Vibes', cursive;
   font-weight: 400;
-  font-size: 1.15rem;
+  font-size: 1.5rem;
   letter-spacing: 0.02em;
   margin-top: 0.5rem;
   background: linear-gradient(135deg, var(--color-primary), #e0699f);
