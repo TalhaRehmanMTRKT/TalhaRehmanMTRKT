@@ -415,6 +415,55 @@ p {
   background-clip: text;
 }
 
+/* Blog jumper banner */
+.hero-blog-jumper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: var(--spacing-xl);
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-subtle);
+  border: 1px solid var(--color-accent-light);
+  color: var(--color-accent-text);
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+  transition: all var(--transition-base);
+  animation: jumperPulse 2.5s ease-in-out infinite;
+}
+
+.hero-blog-jumper:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
+  transform: translateX(4px);
+  box-shadow: 0 2px 12px var(--color-shadow-md);
+}
+
+.jumper-icon {
+  font-size: 1.1rem;
+}
+
+.jumper-text {
+  letter-spacing: 0.01em;
+}
+
+.jumper-arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--transition-fast);
+}
+
+.hero-blog-jumper:hover .jumper-arrow {
+  transform: translateX(3px);
+}
+
+@keyframes jumperPulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 6px var(--color-accent-light); }
+}
+
 .hero-tagline {
   font-size: var(--fs-lg);
   color: var(--color-text-secondary);
