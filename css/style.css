@@ -402,14 +402,14 @@ p {
 }
 
 [data-theme="dark"] .hero-motto {
-  background: linear-gradient(135deg, #93c5fd, #f0abfc);
+  background: linear-gradient(135deg, #2e6008, #000000);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 :root .hero-motto {
-  background: linear-gradient(135deg, #2563eb, #c026d3);
+  background: linear-gradient(135deg, #bdc5d5, #c7d326);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
