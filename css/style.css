@@ -827,6 +827,16 @@ p {
   color: #fde68a;
 }
 
+.project-status.finished {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+[data-theme="dark"] .project-status.finished {
+  background: #064e3b;
+  color: #6ee7b7;
+}
+
 .project-link-btn {
   display: inline-flex;
   align-items: center;
