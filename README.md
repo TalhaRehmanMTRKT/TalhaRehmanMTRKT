@@ -47,12 +47,11 @@ PhD student at Incheon National University, South Korea. Researching optimal des
 
 
 ## 🛠️ Skills & Tools
-
 | Category | Technologies |
 |---|---|
 | **Languages** | ![Python](https://img.shields.io/badge/Python-FFD43B?style=flat&logo=python&logoColor=darkblue) ![C](https://img.shields.io/badge/C-00599C?style=flat&logo=c&logoColor=white) ![C++](https://img.shields.io/badge/C++-00599C?style=flat&logo=c%2B%2B&logoColor=white) ![Java](https://img.shields.io/badge/Java-007396?style=flat&logo=java&logoColor=white) ![Assembly](https://img.shields.io/badge/Assembly-6E4C13?style=flat) |
 | **ML / DL** | ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat&logo=pytorch&logoColor=white) ![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=flat&logo=tensorflow&logoColor=white) |
-| **Optimization & Simulation** | ![CPLEX](https://img.shields.io/badge/CPLEX-007396?style=flat) ![LINGO](https://img.shields.io/badge/LINGO-000000?style=flat) ![MATLAB](https://img.shields.io/badge/MATLAB-0076A8?style=flat) ![RT--LAB](https://img.shields.io/badge/RT--LAB-1A1A1A?style=flat) |
+| **Optimization & Simulation** | ![CPLEX](https://img.shields.io/badge/CPLEX-007396?style=flat) ![Gurobi](https://img.shields.io/badge/Gurobi-FFA500?style=flat) ![Pyomo](https://img.shields.io/badge/Pyomo-3776AB?style=flat) ![MATLAB](https://img.shields.io/badge/MATLAB-0076A8?style=flat) ![RT--LAB](https://img.shields.io/badge/RT--LAB-1A1A1A?style=flat) |
 | **Hardware & Embedded** | ![OPAL--RT](https://img.shields.io/badge/OPAL--RT-ED1C24?style=flat) ![Raspberry Pi](https://img.shields.io/badge/Raspberry%20Pi-C51A4A?style=flat&logo=raspberry-pi&logoColor=white) ![Arduino](https://img.shields.io/badge/Arduino-00979D?style=flat&logo=arduino&logoColor=white) |
 | **Web & App** | ![Django](https://img.shields.io/badge/Django-092E20?style=flat&logo=django&logoColor=white) ![Dash](https://img.shields.io/badge/Dash-119DA4?style=flat&logo=plotly&logoColor=white) ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white) |
 | **Dev Tools** | ![VS Code](https://img.shields.io/badge/VS%20Code-007ACC?style=flat&logo=visual-studio-code&logoColor=white) ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91?style=flat&logo=visual-studio&logoColor=white) ![PyCharm](https://img.shields.io/badge/PyCharm-000000?style=flat&logo=pycharm&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white) ![Proteus](https://img.shields.io/badge/Proteus-3B3A38?style=flat) |
