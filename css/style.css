@@ -545,6 +545,9 @@ p {
 }
 
 .skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: var(--fs-sm);
   font-weight: var(--fw-medium);
   padding: var(--spacing-xs) var(--spacing-md);
@@ -552,6 +555,12 @@ p {
   color: var(--color-tag-text);
   border-radius: var(--radius-full);
   transition: all var(--transition-fast);
+}
+
+.skill-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .skill-tag:hover {

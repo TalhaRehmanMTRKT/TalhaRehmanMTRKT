@@ -36,15 +36,15 @@ PhD student at Incheon National University, South Korea. Researching optimal des
 
 ## 🚀 Projects
 
-| | Project | Description |
+|   | Project | Description |
 |---|---|---|
-| ⚡ | **Agent-based Grid Operation** | Multi-agent framework for distributed energy resource management *(In Progress)* |
-| 💻 | [Blog Series Code](https://github.com/TalhaRehmanMTRKT/OptimalOperations) | C++/CPLEX implementations for energy systems optimization |
-| 🔋 | [Microgrid Operation](https://github.com/TalhaRehmanMTRKT/MicrogridOptimization) | Optimal operation and design of multi-energy microgrids |
-| 🌊 | [LSTM Forecasting](https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting) | LSTM-based flood and drought time series forecasting |
-| 🕳️ | [Black Hole of Repos](https://github.com/TalhaRehmanMTRKT/trk-blackhole) | Miscellaneous code experiments and snippets |
+| ⚡ | **Agent-based Grid Operation** | Multi-agent framework for distributed energy resource management.<br>**Status:** In Progress |
+| 📝 | **Personal Website Blog Series** | Blog series on optimization, reinforcement learning, and LLM applications in power systems, with practical implementations and case studies.<br>**Status:** In Progress |
+| 💻 | [Medium Blogs Content](https://github.com/TalhaRehmanMTRKT/OptimalOperations-MediumContent) | C++/CPLEX implementations for energy systems optimization.<br>**Status:** End of Life |
+| 🔋 | [Microgrid Operation](https://github.com/TalhaRehmanMTRKT/MicrogridOptimization) | Optimal operation and design of multi-energy microgrids.<br>**Status:** End of Life |
+| 🌊 | [LSTM Forecasting](https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting) | LSTM-based flood and drought time series forecasting.<br>**Status:** End of Life |
+| 🕳️ | [Black Hole of Repos](https://github.com/TalhaRehmanMTRKT/trk-blackhole) | Miscellaneous code experiments and snippets.<br>**Status:** End of Life |
 
----
 
 ## 🛠️ Skills & Tools
 
