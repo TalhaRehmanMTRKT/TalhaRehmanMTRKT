@@ -32,6 +32,8 @@ PhD student at Incheon National University, South Korea. Researching optimal des
 
 5. **T. Rehman**, M.A. Khan, A. Hussain, H.-M. Kim, "Optimal sizing of multi-energy microgrid with electric vehicle integration: Considering carbon emission and resilience load," *Energy Reports*, 11 (2024) 4192–4212. [DOI](https://doi.org/10.1016/j.egyr.2024.04.001)
 
+6. **T. Rehman**, M.A. Khan, W.-G. Lee, H.-M. Kim, Resilience oriented coordinated optimal operation of distribution system with virtual power plant, *Sustainable Energy, Grids and Networks*, 46 (2026) 102206. [DOI](https://doi.org/10.1016/j.segan.2026.102206)
+
 ---
 
 ## 🚀 Projects
