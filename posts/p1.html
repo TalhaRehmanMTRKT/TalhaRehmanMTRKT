@@ -1,123 +1,345 @@
-<!-- 
-  SAMPLE BLOG POST: Introduction to Optimization with C++/CPLEX
-  This file contains ONLY the post content (no <html>, <head>, <body> tags).
-  It is loaded into post.html which provides the layout, theme, KaTeX, and Highlight.js.
-  
-  SUPPORTED FEATURES:
-  - HTML content (headings, paragraphs, lists, images, tables, blockquotes)
-  - LaTeX math: use $...$ for inline and $$...$$ for display equations
-  - Code blocks: use <pre><code class="language-xxx">...</code></pre>
-  - Images: <img src="assets/your-image.png" alt="description">
+<!--
+  Auto-generated from:
+    trk-blogs-docs/p1.tex            (prose, metadata, structure)
+    trk-blogs/p1/main.cpp            (code snippets)
+    trk-blogs/p1/output.csv          (results table)
+    TalhaRehmanMTRKT/assets/p1/      (figures)
+
+  Do not edit by hand. Re-generate with Copilot when any of the source files change.
 -->
 
 <p>
-  Optimization lies at the heart of modern engineering and operations research. In this post, 
-  I'll walk you through the fundamentals of setting up a linear programming (LP) problem 
-  using IBM's CPLEX solver with C++. Whether you're new to optimization or looking for a
-  practical reference, this guide covers the essentials.
+  Most introductory optimisation tutorials stop at toy examples with two variables and a
+  single constraint. They are useful to make sense of the abstract form of a linear
+  program, but the gap between such a toy and the first real engineering problem you
+  actually want to solve can feel wide. This post is the bridge I wish I had when I
+  started: a complete, runnable C++/CPLEX program that solves a 24-hour economic dispatch
+  of a small microgrid, with every modelling choice explained alongside the code.
 </p>
 
-<h2>What is Linear Programming?</h2>
+<h2>The problem</h2>
 
 <p>
-  Linear programming is a mathematical method for finding the best outcome in a model
-  whose requirements are represented by linear relationships. The general form of an LP is:
+  Consider a microgrid that, over a horizon of $T = 24$ hours, must serve an electrical
+  load $P_{\text{load}}(t)$ using four kinds of resources:
 </p>
 
+<ul>
+  <li>Two dispatchable generators (<em>DG-1</em> and <em>DG-2</em>) with per-kW
+      operating costs $C_{\text{dg1}}$ and $C_{\text{dg2}}$ and capacity limits.</li>
+  <li>Two non-dispatchable PV units with hourly forecasts $R_{\text{dg1}}(t)$ and
+      $R_{\text{dg2}}(t)$.</li>
+  <li>A battery storage system characterised by capacity $P_{\text{bmax}}$, round-trip
+      efficiency $\eta$, and an initial state of charge $\text{SoC}_{\text{ini}}$.</li>
+  <li>A connection to the upstream grid where energy can be bought at price
+      $C_{\text{Gbuy}}(t)$ or sold back at $C_{\text{Gsell}}(t)$.</li>
+</ul>
+
+<p>
+  The goal is to choose, for every hour, how much each generator produces, how the
+  battery is charged or discharged, and how much energy is exchanged with the grid, so as
+  to minimise the total operating cost while meeting demand.
+</p>
+
+<!-- Image placeholder — drop assets/p1/system.png and uncomment to enable.
+<figure>
+  <img src="assets/p1/system.png" alt="One-line diagram of the microgrid">
+  <figcaption>One-line diagram of the microgrid: two dispatchable generators, two PV
+  units, a battery, and a grid tie serving a single bus load.</figcaption>
+</figure>
+-->
+
+<h2>Mathematical formulation</h2>
+
+<h3>Decision variables</h3>
+
+<p>For each hour $t \in \{1, \dots, T\}$:</p>
+
+<ul>
+  <li>$P_{\text{dg1}}(t),\, P_{\text{dg2}}(t) \ge 0$: dispatchable generator outputs.</li>
+  <li>$P_{\text{Gbuy}}(t),\, P_{\text{Gsell}}(t) \ge 0$: power bought from / sold to the grid.</li>
+  <li>$B_{\text{chg}}(t),\, B_{\text{dchg}}(t) \ge 0$: battery charging / discharging power.</li>
+  <li>$\text{SoC}(t) \in [0,1]$: battery state of charge.</li>
+</ul>
+
+<h3>Objective</h3>
+
+<p>Minimise the total operating cost over the horizon:</p>
+
 $$
-\min_{x} \quad c^T x
+\min \; \sum_{t=1}^{T} \Big[
+  C_{\text{dg1}}\, P_{\text{dg1}}(t) + C_{\text{dg2}}\, P_{\text{dg2}}(t)
+  + C_{\text{Gbuy}}(t)\, P_{\text{Gbuy}}(t) - C_{\text{Gsell}}(t)\, P_{\text{Gsell}}(t)
+\Big].
 $$
+
+<h3>Constraints</h3>
+
+<p><strong>Power balance.</strong> For every hour the supply must equal the demand:</p>
+
 $$
-\text{subject to:} \quad Ax \leq b, \quad x \geq 0
+P_{\text{dg1}}(t) + P_{\text{dg2}}(t) + R_{\text{dg1}}(t) + R_{\text{dg2}}(t)
++ B_{\text{dchg}}(t) - B_{\text{chg}}(t)
++ P_{\text{Gbuy}}(t) - P_{\text{Gsell}}(t) = P_{\text{load}}(t).
+$$
+
+<p><strong>Battery dynamics.</strong> The state of charge evolves as</p>
+
+$$
+\text{SoC}(t) = \text{SoC}(t-1)
++ \frac{\eta\, B_{\text{chg}}(t) - B_{\text{dchg}}(t)/\eta}{P_{\text{bmax}}},
 $$
 
 <p>
-  Where $c$ is the cost vector, $A$ is the constraint matrix, $b$ is the right-hand side vector,
-  and $x$ is the vector of decision variables.
+  with $\text{SoC}(0) = \text{SoC}_{\text{ini}}$, and the charge / discharge powers are
+  bounded so that $\text{SoC}(t)$ stays inside $[0,1]$.
 </p>
 
-<h2>Setting Up CPLEX in C++</h2>
+<h2>Implementation in C++/CPLEX</h2>
 
 <p>
-  Before writing the optimization model, ensure that IBM CPLEX is installed and that your 
-  IDE is configured with the correct include and library paths.
+  The complete code lives in
+  <a href="https://github.com/TalhaRehmanMTRKT/trk-blogs/tree/main/p1" target="_blank" rel="noopener">trk-blogs/p1/main.cpp</a>.
+  We walk through it in six small pieces.
 </p>
 
-<h3>A Minimal Example</h3>
+<h3>1. Input data</h3>
 
-<p>Let's solve a simple problem:</p>
+<p>
+  We hard-code the 24-hour profiles for load, prices, and PV forecasts in plain C arrays.
+  A real workflow would read these from a CSV or a database; keeping them inline makes
+  the example self-contained.
+</p>
 
-$$
-\min \quad x_1 + 2x_2
-$$
-$$
-\text{s.t.} \quad x_1 + x_2 \geq 10, \quad x_1 \leq 8, \quad x_1, x_2 \geq 0
-$$
+<pre><code class="language-cpp">int T     = 24;   // One day (hours)
+int Cdg1  = 80;   // Cost per kW from DG-1
+int Cdg2  = 90;   // Cost per kW from DG-2
 
-<pre><code class="language-cpp">#include &lt;ilcplex/ilocplex.h&gt;
-#include &lt;iostream&gt;
+int* Pload = new int[T] {
+    169, 175, 179, 171, 181, 172, 270, 264,
+    273, 281, 193, 158, 161, 162, 250, 260,
+    267, 271, 284, 167, 128, 134, 144, 150 };
 
-int main() {
-    IloEnv env;
-    try {
-        IloModel model(env);
+int* CGbuy = new int[T] {
+     90,  90,  90,  90,  90,  90, 110, 110,
+    110, 110, 110, 125, 125, 125, 125, 125,
+    125, 125, 110, 110, 110, 110, 110, 110 };
 
-        // Decision variables
-        IloNumVar x1(env, 0, IloInfinity, ILOFLOAT, "x1");
-        IloNumVar x2(env, 0, IloInfinity, ILOFLOAT, "x2");
+int* CGsell = new int[T] {
+     70,  70,  70,  70,  70,  70,  90,  90,
+     90,  90,  90, 105, 105, 105, 105, 105,
+    105, 105,  90,  90,  90,  90,  90,  90 };
 
-        // Objective: minimize x1 + 2*x2
-        model.add(IloMinimize(env, x1 + 2 * x2));
+float* Rdg1 = new float[T] {
+    0,0,0,0,0,0,0,10,15,20,23,28,
+    33,35,34,31,28,10,0,0,0,0,0,0 };
 
-        // Constraints
-        model.add(x1 + x2 >= 10);
-        model.add(x1 <= 8);
+float* Rdg2 = new float[T] {
+    0,0,0,0,0,0,0,10,15,20,23,28,
+    33,35,34,31,28,10,0,0,0,0,0,0 };
 
-        // Solve
-        IloCplex cplex(model);
-        cplex.solve();
+float socini = 0.2f;   // Initial battery SoC
+int   Pbmax  = 200;    // Battery capacity (kWh)
+float effin  = 0.95f;  // Battery efficiency
+</code></pre>
 
-        std::cout << "Optimal x1 = " << cplex.getValue(x1) << std::endl;
-        std::cout << "Optimal x2 = " << cplex.getValue(x2) << std::endl;
-        std::cout << "Objective   = " << cplex.getObjValue() << std::endl;
+<h3>2. Decision variables</h3>
 
-    } catch (IloException& e) {
-        std::cerr << "CPLEX Error: " << e.getMessage() << std::endl;
+<p>
+  CPLEX exposes <code>IloNumVarArray</code> for vectors of continuous variables. We pass
+  a lower and upper bound directly at construction; this is equivalent to adding two box
+  constraints and produces a slightly leaner model.
+</p>
+
+<pre><code class="language-cpp">IloNumVarArray PGbuy  (env, T, 0, IloInfinity); // Grid power bought
+IloNumVarArray PGsell (env, T, 0, IloInfinity); // Grid power sold
+
+IloNumVarArray statoc (env, T, 0, 1);   // Battery state of charge
+
+IloNumVarArray Bchg   (env, T, 0, 100); // Battery charging
+IloNumVarArray Bdischg(env, T, 0, 100); // Battery discharging
+
+IloNumVarArray Pdg1   (env, T, 0, 80);  // DG-1 output
+IloNumVarArray Pdg2   (env, T, 0, 100); // DG-2 output
+</code></pre>
+
+<h3>3. Objective</h3>
+
+<p>
+  The objective is built incrementally with an <code>IloExpr</code>. Selling to the grid
+  appears with a negative sign because revenue offsets cost.
+</p>
+
+<pre><code class="language-cpp">IloExpr objective(env);
+for (int t = 0; t &lt; T; t++)
+{
+    objective += Cdg1 * Pdg1[t]
+               + Cdg2 * Pdg2[t]
+               + CGbuy[t]  * PGbuy[t]
+               - CGsell[t] * PGsell[t];
+}
+model.add(IloMinimize(env, objective));
+</code></pre>
+
+<h3>4. Constraints</h3>
+
+<p>
+  Every constraint is added inside a single loop over $t$. The first hour is treated as a
+  special case so the SoC dynamics can refer to $\text{SoC}_{\text{ini}}$ instead of
+  $\text{SoC}(t-1)$.
+</p>
+
+<pre><code class="language-cpp">for (int t = 0; t &lt; T; t++)
+{
+    // DG output bounds
+    model.add(0 &lt;= Pdg1[t]);  model.add(Pdg1[t] &lt;= 80);
+    model.add(0 &lt;= Pdg2[t]);  model.add(Pdg2[t] &lt;= 90);
+
+    // Battery state of charge bounds
+    model.add(0 &lt;= statoc[t]); model.add(statoc[t] &lt;= 1);
+
+    if (t == 0)
+    {
+        model.add(statoc[t] == socini
+                  + ((effin * Bchg[t] - (Bdischg[t] / effin)) / Pbmax));
+        model.add(Bchg[t]    &lt;= (Pbmax * (1 - socini) / effin));
+        model.add(Bdischg[t] &lt;= (Pbmax * socini * effin));
     }
-    env.end();
-    return 0;
+    else
+    {
+        model.add(statoc[t] == statoc[t - 1]
+                  + ((effin * Bchg[t] - (Bdischg[t] / effin)) / Pbmax));
+        model.add(Bchg[t]    &lt;= (Pbmax * (1 - statoc[t - 1])) / effin);
+        model.add(Bdischg[t] &lt;= Pbmax * statoc[t - 1] * effin);
+    }
+
+    // Power balance
+    model.add(Pdg1[t] + Pdg2[t] + Rdg1[t] + Rdg2[t]
+              + Bdischg[t] - Bchg[t]
+              + PGbuy[t]   - PGsell[t] == Pload[t]);
 }
 </code></pre>
 
-<h2>Understanding the Output</h2>
+<h3>5. Solving and reporting</h3>
 
 <p>
-  Running this program yields $x_1 = 8$ and $x_2 = 2$, with an optimal objective value of 
-  $8 + 2 \times 2 = 12$. The solver verified that this solution is globally optimal.
+  <code>IloCplex</code> extracts the model, optionally exports the LP file for inspection,
+  and solves it. We always check the return value of <code>cplex.solve()</code> before
+  reading any value back: a model that is infeasible or unbounded will not have a
+  meaningful objective.
 </p>
+
+<pre><code class="language-cpp">IloCplex cplex(env);
+cplex.extract(model);
+cplex.exportModel("ModelLP.lp");
+cplex.setOut(env.getNullStream());
+
+if (!cplex.solve()) {
+    env.error() &lt;&lt; "Failed" &lt;&lt; endl;
+    throw(-1);
+}
+
+double obj = cplex.getObjValue();
+auto end   = chrono::high_resolution_clock::now();
+auto ms    = chrono::duration_cast&lt;chrono::milliseconds&gt;(end - start);
+
+cout &lt;&lt; "\n\tElapsed time (ms): " &lt;&lt; ms.count()  &lt;&lt; endl;
+cout &lt;&lt; "Solution status     : " &lt;&lt; cplex.getStatus() &lt;&lt; endl;
+cout &lt;&lt; "Minimized objective : " &lt;&lt; obj &lt;&lt; endl;
+</code></pre>
+
+<h3>6. Saving results to CSV</h3>
+
+<p>
+  Finally we dump the optimal trajectories of every variable to <code>output.csv</code>
+  so they can be plotted or post-processed.
+</p>
+
+<pre><code class="language-cpp">std::ofstream outputFile("output.csv");
+if (outputFile.is_open()) {
+    outputFile &lt;&lt; "Time,Pload,CGbuy,CGsell,Rdg1,Rdg2,"
+                  "PGbuy,PGsell,statoc,Bchg,Bdischg,Pdg1,Pdg2" &lt;&lt; std::endl;
+
+    for (int i = 0; i &lt; T; i++) {
+        outputFile &lt;&lt; i + 1                 &lt;&lt; ","
+                   &lt;&lt; Pload[i]              &lt;&lt; ","
+                   &lt;&lt; CGbuy[i]              &lt;&lt; ","
+                   &lt;&lt; CGsell[i]             &lt;&lt; ","
+                   &lt;&lt; Rdg1[i]               &lt;&lt; ","
+                   &lt;&lt; Rdg2[i]               &lt;&lt; ","
+                   &lt;&lt;  cplex.getValue(PGbuy[i])   &lt;&lt; ","
+                   &lt;&lt; -cplex.getValue(PGsell[i])  &lt;&lt; ","
+                   &lt;&lt;  cplex.getValue(statoc[i])  &lt;&lt; ","
+                   &lt;&lt; -cplex.getValue(Bchg[i])    &lt;&lt; ","
+                   &lt;&lt;  cplex.getValue(Bdischg[i]) &lt;&lt; ","
+                   &lt;&lt;  cplex.getValue(Pdg1[i])    &lt;&lt; ","
+                   &lt;&lt;  cplex.getValue(Pdg2[i])    &lt;&lt; std::endl;
+    }
+    outputFile.close();
+}
+</code></pre>
+
+<h2>Results</h2>
+
+<p>
+  Solving the program with the input data above yields a 24-hour dispatch plan that uses
+  the cheapest generator (DG-1) at full capacity throughout the horizon, fills in the
+  demand gap with DG-2 during the morning peak, charges the battery from the grid when
+  prices are low, and sells back during the high-price midday window. The hourly
+  trajectories of every decision variable are summarised below.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Time</th><th>P<sub>load</sub></th><th>C<sub>Gbuy</sub></th><th>C<sub>Gsell</sub></th>
+      <th>R<sub>dg1</sub></th><th>R<sub>dg2</sub></th>
+      <th>P<sub>Gbuy</sub></th><th>P<sub>Gsell</sub></th>
+      <th>SoC</th><th>B<sub>chg</sub></th><th>B<sub>dchg</sub></th>
+      <th>P<sub>dg1</sub></th><th>P<sub>dg2</sub></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>169</td><td>90</td><td>70</td><td>0</td><td>0</td><td>157.42</td><td>0</td><td>0.525</td><td>-68.42</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>2</td><td>175</td><td>90</td><td>70</td><td>0</td><td>0</td><td>95.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>3</td><td>179</td><td>90</td><td>70</td><td>0</td><td>0</td><td>99.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>4</td><td>171</td><td>90</td><td>70</td><td>0</td><td>0</td><td>91.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>5</td><td>181</td><td>90</td><td>70</td><td>0</td><td>0</td><td>101.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>6</td><td>172</td><td>90</td><td>70</td><td>0</td><td>0</td><td>192.00</td><td>0</td><td>1.000</td><td>-100.00</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>7</td><td>270</td><td>110</td><td>90</td><td>0</td><td>0</td><td>100.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>8</td><td>264</td><td>110</td><td>90</td><td>10</td><td>10</td><td>74.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>9</td><td>273</td><td>110</td><td>90</td><td>15</td><td>15</td><td>73.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>10</td><td>281</td><td>110</td><td>90</td><td>20</td><td>20</td><td>22.24</td><td>0</td><td>0.743</td><td>0</td><td>48.76</td><td>80</td><td>90</td></tr>
+    <tr><td>11</td><td>193</td><td>110</td><td>90</td><td>23</td><td>23</td><td>0</td><td>0</td><td>0.853</td><td>-23.00</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>12</td><td>158</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>-68.00</td><td>0.853</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>13</td><td>161</td><td>125</td><td>105</td><td>33</td><td>33</td><td>0</td><td>-75.00</td><td>0.853</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>14</td><td>162</td><td>125</td><td>105</td><td>35</td><td>35</td><td>0</td><td>-78.00</td><td>0.853</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>15</td><td>250</td><td>125</td><td>105</td><td>34</td><td>34</td><td>0</td><td>0</td><td>0.789</td><td>0</td><td>12.00</td><td>80</td><td>90</td></tr>
+    <tr><td>16</td><td>260</td><td>125</td><td>105</td><td>31</td><td>31</td><td>0</td><td>0</td><td>0.642</td><td>0</td><td>28.00</td><td>80</td><td>90</td></tr>
+    <tr><td>17</td><td>267</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>0</td><td>0.426</td><td>0</td><td>41.00</td><td>80</td><td>90</td></tr>
+    <tr><td>18</td><td>271</td><td>125</td><td>105</td><td>10</td><td>10</td><td>0</td><td>0</td><td>0.000</td><td>0</td><td>81.00</td><td>80</td><td>90</td></tr>
+    <tr><td>19</td><td>284</td><td>110</td><td>90</td><td>0</td><td>0</td><td>114.00</td><td>0</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>20</td><td>167</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-3.00</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>21</td><td>128</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-42.00</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>22</td><td>134</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-36.00</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>23</td><td>144</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-26.00</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>24</td><td>150</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-20.00</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+  </tbody>
+</table>
 
 <blockquote>
-  <strong>Tip:</strong> Always check the CPLEX solution status using <code>cplex.getStatus()</code>
-  to confirm the solver found an optimal solution before using the results.
+  <strong>Tip:</strong> always check <code>cplex.getStatus()</code> before reading
+  variable values back &mdash; an infeasible or unbounded model will not have a
+  meaningful objective.
 </blockquote>
 
-<h2>Key Concepts</h2>
-
-<ul>
-  <li><strong>Decision Variables:</strong> The unknowns you're solving for ($x_1$, $x_2$).</li>
-  <li><strong>Objective Function:</strong> What you want to minimize or maximize.</li>
-  <li><strong>Constraints:</strong> The conditions the solution must satisfy.</li>
-  <li><strong>Feasible Region:</strong> The set of all points satisfying all constraints.</li>
-</ul>
-
-<h2>Next Steps</h2>
+<h2>Where to go next</h2>
 
 <p>
-  In the next post, we'll extend this to mixed-integer programming (MIP) where some variables
-  are restricted to integer values — a critical technique for real-world energy system scheduling.
-</p>
-
-<p>
-  Check out the full code repository: 
-  <a href="https://github.com/TalhaRehmanMTRKT/OptimalOperations" target="_blank">OptimalOperations on GitHub</a>.
+  This formulation is intentionally minimal so that every decision and constraint is easy
+  to inspect. Natural extensions include adding binary on/off variables for the
+  dispatchable generators (turning the LP into a MILP), modelling start-up costs and
+  minimum up/down times, introducing reserve requirements, and accounting for forecast
+  uncertainty through robust or stochastic formulations. We will pick these up in later
+  posts of this series.
 </p>
