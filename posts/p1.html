@@ -73,7 +73,7 @@
   <li>$P_{\text{Gbuy}}(t),\, P_{\text{Gsell}}(t) \ge 0$: power bought from / sold to the grid.</li>
   <li>$B_{\text{chg}}(t),\, B_{\text{dchg}}(t) \ge 0$: battery charging / discharging power.</li>
   <li>$u_{\text{bat}}(t) \in \{0,1\}$: battery mode indicator ($1$ when the battery is allowed to charge, $0$ when it is allowed to discharge).</li>
-  <li>$\text{SoC}(t) \in [0,1]$: battery state of charge.</li>
+  <li>$\text{SoC}(t) \in [\text{SoC}_{\min}, \text{SoC}_{\max}]$: battery state of charge, with $\text{SoC}_{\min} = 0.1$ and $\text{SoC}_{\max} = 0.9$.</li>
 </ul>
 
 <h3>Objective</h3>
@@ -106,8 +106,15 @@ $$
 
 <p>
   with $\text{SoC}(0) = \text{SoC}_{\text{ini}}$, and the charge / discharge powers are
-  bounded so that $\text{SoC}(t)$ stays inside $[0,1]$.
+  bounded so that $\text{SoC}(t)$ stays inside
+  $[\text{SoC}_{\min}, \text{SoC}_{\max}] = [0.1, 0.9]$. Concretely:
 </p>
+
+$$
+  B_{\text{chg}}(t)  \le \frac{P_{\text{bmax}}\,(\text{SoC}_{\max} - \text{SoC}(t-1))}{\eta},
+  \quad
+  B_{\text{dchg}}(t) \le P_{\text{bmax}}\,(\text{SoC}(t-1) - \text{SoC}_{\min})\,\eta.
+$$
 
 <p>
   <strong>No simultaneous charge and discharge.</strong> Without an additional
@@ -177,7 +184,7 @@ float* Rdg2 = new float[T] {
     0,0,0,0,0,0,0,10,15,20,23,28,
     33,35,34,31,28,10,0,0,0,0,0,0 };
 
-float socini = 0.2f;   // Initial battery SoC
+float socini = 0.2f, socmin = 0.1f, socmax = 0.9f;  // Battery SoC: initial, min, max
 int   Pbmax  = 200;    // Battery capacity (kWh)
 float effin  = 0.95f;  // Battery efficiency
 </code></pre>
@@ -197,7 +204,7 @@ const float Mdis = 1e6f; // Big-M for discharging power
 IloNumVarArray  PGbuy  (env, T, 0, IloInfinity); // Grid power bought
 IloNumVarArray  PGsell (env, T, 0, IloInfinity); // Grid power sold
 
-IloNumVarArray  statoc (env, T, 0, 1);    // Battery state of charge
+IloNumVarArray  statoc (env, T, socmin, socmax);    // Battery state of charge (constrained to [socmin, socmax])
 IloNumVarArray  Bchg   (env, T, 0, Mchg); // Battery charging power
 IloNumVarArray  Bdischg(env, T, 0, Mdis); // Battery discharging power
 IloBoolVarArray ubat   (env, T);          // 1 = charging, 0 = discharging
@@ -248,15 +255,15 @@ model.add(IloMinimize(env, objective));
     {
         model.add(statoc[t] == socini
                   + ((effin * Bchg[t] - (Bdischg[t] / effin)) / Pbmax));
-        model.add(Bchg[t]    &lt;= (Pbmax * (1 - socini) / effin));
-        model.add(Bdischg[t] &lt;= (Pbmax * socini * effin));
+        model.add(Bchg[t]    &lt;= (Pbmax * (socmax - socini) / effin));
+        model.add(Bdischg[t] &lt;= (Pbmax * (socini - socmin) * effin));
     }
     else
     {
         model.add(statoc[t] == statoc[t - 1]
                   + ((effin * Bchg[t] - (Bdischg[t] / effin)) / Pbmax));
-        model.add(Bchg[t]    &lt;= (Pbmax * (1 - statoc[t - 1])) / effin);
-        model.add(Bdischg[t] &lt;= Pbmax * statoc[t - 1] * effin);
+        model.add(Bchg[t]    &lt;= (Pbmax * (socmax - statoc[t - 1])) / effin);
+        model.add(Bdischg[t] &lt;= Pbmax * (statoc[t - 1] - socmin) * effin);
     }
 
     // Power balance
@@ -352,30 +359,30 @@ if (outputFile.is_open()) {
     </tr>
   </thead>
   <tbody>
-    <tr><td>1</td><td>169</td><td>90</td><td>70</td><td>0</td><td>0</td><td>157.42</td><td>0</td><td>0.525</td><td>-68.42</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
-    <tr><td>2</td><td>175</td><td>90</td><td>70</td><td>0</td><td>0</td><td>95.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
-    <tr><td>3</td><td>179</td><td>90</td><td>70</td><td>0</td><td>0</td><td>99.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
-    <tr><td>4</td><td>171</td><td>90</td><td>70</td><td>0</td><td>0</td><td>91.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
-    <tr><td>5</td><td>181</td><td>90</td><td>70</td><td>0</td><td>0</td><td>101.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
-    <tr><td>6</td><td>172</td><td>90</td><td>70</td><td>0</td><td>0</td><td>192.00</td><td>0</td><td>1.000</td><td>-100.00</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
-    <tr><td>7</td><td>270</td><td>110</td><td>90</td><td>0</td><td>0</td><td>51.24</td><td>0</td><td>0.743</td><td>0</td><td>48.76</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>8</td><td>264</td><td>110</td><td>90</td><td>10</td><td>10</td><td>74.00</td><td>0</td><td>0.743</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>9</td><td>273</td><td>110</td><td>90</td><td>15</td><td>15</td><td>73.00</td><td>0</td><td>0.743</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>10</td><td>281</td><td>110</td><td>90</td><td>20</td><td>20</td><td>71.00</td><td>0</td><td>0.743</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>11</td><td>193</td><td>110</td><td>90</td><td>23</td><td>23</td><td>0</td><td>0</td><td>0.853</td><td>-23.00</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>12</td><td>158</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>-68.00</td><td>0.853</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>13</td><td>161</td><td>125</td><td>105</td><td>33</td><td>33</td><td>0</td><td>-75.00</td><td>0.853</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>14</td><td>162</td><td>125</td><td>105</td><td>35</td><td>35</td><td>0</td><td>-78.00</td><td>0.853</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>15</td><td>250</td><td>125</td><td>105</td><td>34</td><td>34</td><td>0</td><td>0</td><td>0.789</td><td>0</td><td>12.00</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>16</td><td>260</td><td>125</td><td>105</td><td>31</td><td>31</td><td>0</td><td>0</td><td>0.642</td><td>0</td><td>28.00</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>17</td><td>267</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>0</td><td>0.426</td><td>0</td><td>41.00</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>18</td><td>271</td><td>125</td><td>105</td><td>10</td><td>10</td><td>0</td><td>0</td><td>0.000</td><td>0</td><td>81.00</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>19</td><td>284</td><td>110</td><td>90</td><td>0</td><td>0</td><td>114.00</td><td>0</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>20</td><td>167</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-3.00</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>21</td><td>128</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-42.00</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>22</td><td>134</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-36.00</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>23</td><td>144</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-26.00</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>24</td><td>150</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-20.00</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>1</td><td>169</td><td>90</td><td>70</td><td>0</td><td>0</td><td>236.37</td><td>0</td><td>0.900</td><td>-147.37</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>2</td><td>175</td><td>90</td><td>70</td><td>0</td><td>0</td><td>95.00</td><td>0</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>3</td><td>179</td><td>90</td><td>70</td><td>0</td><td>0</td><td>99.00</td><td>0</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>4</td><td>171</td><td>90</td><td>70</td><td>0</td><td>0</td><td>91.00</td><td>0</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>5</td><td>181</td><td>90</td><td>70</td><td>0</td><td>0</td><td>101.00</td><td>0</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>6</td><td>172</td><td>90</td><td>70</td><td>0</td><td>0</td><td>92.00</td><td>0</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>7</td><td>270</td><td>110</td><td>90</td><td>0</td><td>0</td><td>100.00</td><td>0</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>8</td><td>264</td><td>110</td><td>90</td><td>10</td><td>10</td><td>74.00</td><td>0</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>9</td><td>273</td><td>110</td><td>90</td><td>15</td><td>15</td><td>73.00</td><td>0</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>10</td><td>281</td><td>110</td><td>90</td><td>20</td><td>20</td><td>50.24</td><td>0</td><td>0.791</td><td>0</td><td>20.76</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>11</td><td>193</td><td>110</td><td>90</td><td>23</td><td>23</td><td>0</td><td>0</td><td>0.900</td><td>-23.00</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>12</td><td>158</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>-68.00</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>13</td><td>161</td><td>125</td><td>105</td><td>33</td><td>33</td><td>0</td><td>-75.00</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>14</td><td>162</td><td>125</td><td>105</td><td>35</td><td>35</td><td>0</td><td>-78.00</td><td>0.900</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>15</td><td>250</td><td>125</td><td>105</td><td>34</td><td>34</td><td>10.00</td><td>0</td><td>0.889</td><td>0</td><td>2.00</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>16</td><td>260</td><td>125</td><td>105</td><td>31</td><td>31</td><td>0</td><td>0</td><td>0.742</td><td>0</td><td>28.00</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>17</td><td>267</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>0</td><td>0.526</td><td>0</td><td>41.00</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>18</td><td>271</td><td>125</td><td>105</td><td>10</td><td>10</td><td>0</td><td>0</td><td>0.100</td><td>0</td><td>81.00</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>19</td><td>284</td><td>110</td><td>90</td><td>0</td><td>0</td><td>114.00</td><td>0</td><td>0.100</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>20</td><td>167</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-3.00</td><td>0.100</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>21</td><td>128</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-42.00</td><td>0.100</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>22</td><td>134</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-36.00</td><td>0.100</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>23</td><td>144</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-26.00</td><td>0.100</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>24</td><td>150</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-20.00</td><td>0.100</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
   </tbody>
 </table>
 </div>

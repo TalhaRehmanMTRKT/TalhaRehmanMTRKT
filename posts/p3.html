@@ -35,7 +35,7 @@
 <ul>
   <li>$P_{\text{ev,chg}}^{n}(t),\, P_{\text{ev,dchg}}^{n}(t) \ge 0$: charging /
       discharging power of vehicle $n$.</li>
-  <li>$\text{evsoc}^{n}(t) \in [0,1]$: state of charge of vehicle $n$.</li>
+  <li>$\text{evsoc}^{n}(t) \in [\text{SoC}_{\min}, \text{SoC}_{\max}]$: state of charge of vehicle $n$, with the same $\text{SoC}_{\min} = 0.1$ and $\text{SoC}_{\max} = 0.9$ bounds used by the battery and heat tank.</li>
   <li>$u_{\text{ev}}^{n}(t) \in \{0,1\}$: per-vehicle charge / discharge selector.</li>
 </ul>
 
@@ -65,6 +65,14 @@ $$
 <p>To prevent the optimiser from draining the vehicle for cheap energy and returning it empty, we require it to leave at least half full:</p>
 
 $$ \text{evsoc}^{n}(t_d^{n}) \;\ge\; 0.5, \qquad n = 1,\dots,N_{\text{ev}}. $$
+
+<p>The charge / discharge powers are bounded so that the SoC stays within $[\text{SoC}_{\min}, \text{SoC}_{\max}] = [0.1, 0.9]$, exactly as for the stationary battery in the previous post:</p>
+
+$$
+  P_{\text{ev,chg}}^{n}(t)  \le \frac{C_{\text{ev}}^{n}\,(\text{SoC}_{\max} - \text{evsoc}^{n}(t-1))}{\eta_{\text{ev}}},
+  \quad
+  P_{\text{ev,dchg}}^{n}(t) \le C_{\text{ev}}^{n}\,(\text{evsoc}^{n}(t-1) - \text{SoC}_{\min})\,\eta_{\text{ev}}.
+$$
 
 <h3>Mutual exclusion across all storage units</h3>
 
@@ -132,7 +140,7 @@ for (int n = 0; n < numEvs; n++)
 {
     Pevchg[n]    = IloNumVarArray (env, T, 0, evcap[n], ILOFLOAT);
     Pevdischg[n] = IloNumVarArray (env, T, 0, evcap[n], ILOFLOAT);
-    evsoc[n]     = IloNumVarArray (env, T, 0, 1,        ILOFLOAT);
+    evsoc[n]     = IloNumVarArray (env, T, socmin, socmax, ILOFLOAT);
     uev[n]       = IloBoolVarArray(env, T);
 }
 </code></pre>
@@ -147,8 +155,8 @@ for (int n = 0; n < numEvs; n++)
         {
             model.add(evsoc[n][t] == evsocini[n]
                       + (Eveffin * Pevchg[n][t] - Pevdischg[n][t] / Eveffin) / evcap[n]);
-            model.add(Pevchg[n][t]    <= evcap[n] * (1 - evsocini[n]) / Eveffin);
-            model.add(Pevdischg[n][t] <= evcap[n] * evsocini[n] * Eveffin);
+            model.add(Pevchg[n][t]    <= evcap[n] * (socmax - evsocini[n]) / Eveffin);
+            model.add(Pevdischg[n][t] <= evcap[n] * (evsocini[n] - socmin) * Eveffin);
             // Big-M mutex: per-vehicle charge XOR discharge
             model.add(Pevchg[n][t]    <= 1e6 *      uev[n][t]);
             model.add(Pevdischg[n][t] <= 1e6 * (1 - uev[n][t]));
@@ -157,8 +165,8 @@ for (int n = 0; n < numEvs; n++)
         {
             model.add(evsoc[n][t] == evsoc[n][t - 1]
                       + (Eveffin * Pevchg[n][t] - Pevdischg[n][t] / Eveffin) / evcap[n]);
-            model.add(Pevchg[n][t]    <= evcap[n] * (1 - evsoc[n][t - 1]) / Eveffin);
-            model.add(Pevdischg[n][t] <= evcap[n] * evsoc[n][t - 1] * Eveffin);
+            model.add(Pevchg[n][t]    <= evcap[n] * (socmax - evsoc[n][t - 1]) / Eveffin);
+            model.add(Pevdischg[n][t] <= evcap[n] * (evsoc[n][t - 1] - socmin) * Eveffin);
             model.add(Pevchg[n][t]    <= 1e6 *      uev[n][t]);
             model.add(Pevdischg[n][t] <= 1e6 * (1 - uev[n][t]));
             if (t == td[n]) model.add(evsoc[n][t] >= 0.5);

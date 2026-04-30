@@ -38,12 +38,11 @@ PhD student at Incheon National University, South Korea. Researching optimal des
 
 ---
 
-## 🚀 Projects
+## 🚀 My Work
 
 |   | Project | Description |
 |---|---|---|
 | ⚡ | **Agent-based Grid Operation** | Multi-agent framework for distributed energy resource management.<br>**Status:** In Progress |
-| 📝 | **Personal Website Blog Series** | Blog series on optimization, reinforcement learning, and LLM applications in power systems, with practical implementations and case studies.<br>**Status:** In Progress |
 | 💻 | [Medium Blogs Content](https://github.com/TalhaRehmanMTRKT/OptimalOperations-MediumContent) | C++/CPLEX implementations for energy systems optimization.<br>**Status:** End of Life |
 | 🔋 | [Microgrid Operation](https://github.com/TalhaRehmanMTRKT/MicrogridOptimization) | Optimal operation and design of multi-energy microgrids.<br>**Status:** End of Life |
 | 🌊 | [LSTM Forecasting](https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting) | LSTM-based flood and drought time series forecasting.<br>**Status:** End of Life |
