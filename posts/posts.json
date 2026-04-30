@@ -12,7 +12,7 @@
     "id": "p2",
     "title": "From Single Energy Microgrid to Multi Energy: Adding Heat to the Microgrid Dispatch",
     "date": "2026-05-01",
-    "keywords": ["Optimization", "C++", "CPLEX", "Microgrid", "MILP", "Multi Energy"],
+    "keywords": ["Optimization", "C++", "CPLEX", "Microgrid", "MILP", "Multi Energy", "Thermal"],
     "description": "Building on the electricity-only dispatch from the previous post, this entry extends the C++/CPLEX microgrid model to a true multi-energy system: Combined Heat and Power (CHP) units, a heat-only boiler, a heat storage tank, and bidirectional trading with a district heat network are added on top of the existing electric layer.",
     "file": "p2.html",
     "pinned": false
@@ -21,7 +21,7 @@
     "id": "p3",
     "title": "Adding Electric Vehicles as Flexible Storage to a Multi-Energy Microgrid",
     "date": "2026-05-02",
-    "keywords": ["Optimization", "C++", "CPLEX", "Microgrid", "MILP", "Multi Energy", "Electric Vehicles"],
+    "keywords": ["Optimization", "C++", "CPLEX", "Microgrid", "MILP", "Multi Energy", "Thermal", "Electric Vehicles"],
     "description": "Extending the multi-energy microgrid dispatch from the previous post with a fleet of grid-connected electric vehicles. Each EV is modelled as a time-windowed storage device with its own arrival, departure, capacity and initial state of charge, and is required to leave the microgrid at least half-charged.",
     "file": "p3.html",
     "pinned": false
@@ -30,7 +30,7 @@
     "id": "p4",
     "title": "Closing the Loop with Cooling: A Three-Carrier Microgrid Dispatch",
     "date": "2026-05-03",
-    "keywords": ["Optimization", "C++", "CPLEX", "Microgrid", "MILP", "Multi Energy", "Cooling", "Electric Vehicles"],
+    "keywords": ["Optimization", "C++", "CPLEX", "Microgrid", "MILP", "Multi Energy", "Thermal", "Cooling", "Electric Vehicles"],
     "description": "Adding the cooling sector on top of the EV-aware multi-energy microgrid from the previous post. The cooling demand is served by an absorption chiller fed from the heat bus and an electric chiller fed from the electric bus, fully coupling all three energy carriers into a single MILP.",
     "file": "p4.html",
     "pinned": false
