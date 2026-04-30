@@ -1,0 +1,244 @@
+<!--
+  Auto-generated from:
+    trk-blogs-docs/p4.tex            (prose, metadata, structure)
+    trk-blogs/p4/main.cpp            (code snippets)
+    trk-blogs/p4/output.csv          (results table)
+    TalhaRehmanMTRKT/assets/p4/      (figures)
+
+  Do not edit by hand. Re-generate with Copilot when any of the source files change.
+-->
+
+<p>
+  In the <a href="?id=p1">first post</a> of this series we built a small
+  electricity-only dispatch in C++/CPLEX. The <a href="?id=p2">second post</a> added
+  the heat sector: CHPs, a heat-only boiler, a heat tank, and a district-heat trading
+  link, with the CHP heat-to-power coupling as the only inter-carrier constraint. The
+  <a href="?id=p3">third post</a> added a fleet of plug-in electric vehicles modelled as
+  time-windowed flexible storage on the electric bus.
+</p>
+
+<p>
+  The model still ignores one carrier that is, in many real installations, on the same
+  order of magnitude as heat: <em>cooling</em>. This post adds it, and in doing so
+  finally closes the loop between the three carriers.
+</p>
+
+<h2>Recap and what changes</h2>
+
+<p>The new ingredients are minimal in number but rich in coupling:</p>
+
+<ul>
+  <li>An <em>absorption chiller</em> (AC) that consumes heat and produces cooling with
+      a coefficient of performance $\text{COP}_{\text{ac}}$.</li>
+  <li>An <em>electric chiller</em> (EC) that consumes electricity and produces cooling
+      with a coefficient of performance $\text{COP}_{\text{ec}}$.</li>
+  <li>A new hourly <em>cooling demand</em> $C_{\text{load}}(t)$ and a third balance
+      equation that closes the cooling sector.</li>
+</ul>
+
+<p>
+  With these in place every kWh of CHP electricity has a heat shadow that can either
+  heat the buildings, charge the heat tank, or be turned into cooling through the AC;
+  and every kWh imported from the grid can either serve the electric load, charge an EV,
+  or drive the EC. That is the essence of multi-energy optimisation.
+</p>
+
+<h2>Mathematical formulation</h2>
+
+<h3>New decision variables</h3>
+
+<ul>
+  <li>$H_{\text{ac}}(t) \ge 0$: heat input drawn from the heat bus by the absorption
+      chiller.</li>
+  <li>$P_{\text{ec}}(t) \ge 0$: electricity input drawn from the electric bus by the
+      electric chiller.</li>
+</ul>
+
+<p>The cooling output of each device is its input multiplied by its COP; we never need to introduce the cooling outputs as variables because the cooling balance pins them.</p>
+
+<h3>Three coupled balances</h3>
+
+<p><strong>Electric balance</strong> (the previous one with one extra term):</p>
+
+$$
+\begin{aligned}
+& P_{\text{dg1}}(t) - P_{\text{ec}}(t) + P_{\text{dg2}}(t) + R_{\text{dg1}}(t)
++ P_{\text{chp1}}(t) + P_{\text{chp2}}(t) \\
+& \;\; + B_{\text{dchg}}(t) - B_{\text{chg}}(t)
++ \sum_{n} \big( P_{\text{ev,dchg}}^{n}(t) - P_{\text{ev,chg}}^{n}(t) \big)
++ P_{\text{Gbuy}}(t) - P_{\text{Gsell}}(t)
+= P_{\text{load}}(t).
+\end{aligned}
+$$
+
+<p><strong>Heat balance</strong> (the previous one with one extra term):</p>
+
+$$
+H_{\text{hob}}(t) - H_{\text{ac}}(t) + H_{\text{chp1}}(t) + H_{\text{chp2}}(t)
++ H_{\text{Gbuy}}(t) - H_{\text{Gsell}}(t)
+- H_{\text{chg}}(t) + H_{\text{dchg}}(t)
+= H_{\text{load}}(t).
+$$
+
+<p><strong>Cooling balance</strong> (new):</p>
+
+$$
+\text{COP}_{\text{ac}}\, H_{\text{ac}}(t) + \text{COP}_{\text{ec}}\, P_{\text{ec}}(t) = C_{\text{load}}(t).
+$$
+
+<p>The values used in the implementation are $\text{COP}_{\text{ac}} = 0.85$ and $\text{COP}_{\text{ec}} = 0.95$. Both COPs are below one because the inputs are measured in primary energy on each carrier.</p>
+
+<h3>Big-M mutual exclusion</h3>
+
+<p>All storage devices (battery, heat tank, every EV) reuse the Big-M selectors from the previous posts, with $M = 10^{6}$ (written <code>1e6</code> in the C++ code):</p>
+
+$$
+B_{\text{chg}}(t) \le M\, u_{\text{bat}}(t),\; B_{\text{dchg}}(t) \le M\,(1 - u_{\text{bat}}(t)),
+$$
+$$
+H_{\text{chg}}(t) \le M\, u_{\text{hst}}(t),\; H_{\text{dchg}}(t) \le M\,(1 - u_{\text{hst}}(t)),
+$$
+$$
+P_{\text{ev,chg}}^{n}(t) \le M\, u_{\text{ev}}^{n}(t),\; P_{\text{ev,dchg}}^{n}(t) \le M\,(1 - u_{\text{ev}}^{n}(t)).
+$$
+
+<h3>Why this matters</h3>
+
+<p>
+  The cooling balance is what finally couples <em>all three</em> carriers into a single
+  optimisation: the AC creates a substitution between the heat bus and the cooling bus,
+  the EC between the electric bus and the cooling bus, and the CHPs between the electric
+  bus and the heat bus. The optimal dispatch can therefore arbitrage in non-obvious ways
+  — for instance, run a CHP harder than its electric load justifies because its
+  co-produced heat is cheaper to convert into cooling through the AC than to buy
+  electricity to drive the EC.
+</p>
+
+<h2>Implementation in C++/CPLEX</h2>
+
+<p>The complete code lives in <code>trk-blogs/p4/main.cpp</code>. The cooling extension is small enough that we can present it in four pieces.</p>
+
+<h3>Cooling demand</h3>
+
+<pre><code class="language-cpp">int* Cload  = new int[T] {
+    100, 100,  80, 100, 120, 135, 150, 135,
+    125, 130, 140, 150, 150, 130, 120, 110,
+     90,  80, 135, 150, 135, 140, 110, 125 };
+</code></pre>
+
+<h3>Two new decision variables</h3>
+
+<pre><code class="language-cpp">// Hac : heat drawn from the heat bus by the absorption chiller (kWh-th)
+// Pec : electricity drawn from the electric bus by the electric chiller (kW)
+IloNumVarArray Hac (env, T, 0, IloInfinity);
+IloNumVarArray Pec (env, T, 0, IloInfinity);
+
+// Big-M mutex selectors (battery, heat storage; per-EV uev declared below)
+IloBoolVarArray ubat(env, T);
+IloBoolVarArray uhst(env, T);
+
+// EV decision variables (same as p3) plus per-vehicle Big-M selector uev
+NumVar2D  Pevchg   (env, numEvs);
+NumVar2D  Pevdischg(env, numEvs);
+NumVar2D  evsoc    (env, numEvs);
+BoolVar2D uev      (env, numEvs);
+for (int n = 0; n < numEvs; n++) {
+    Pevchg[n]    = IloNumVarArray (env, T, 0, evcap[n], ILOFLOAT);
+    Pevdischg[n] = IloNumVarArray (env, T, 0, evcap[n], ILOFLOAT);
+    evsoc[n]     = IloNumVarArray (env, T, 0, 1,        ILOFLOAT);
+    uev[n]       = IloBoolVarArray(env, T);
+}
+</code></pre>
+
+<h3>The three coupled balances</h3>
+
+<pre><code class="language-cpp">for (int t = 0; t < T; t++)
+{
+    IloExpr evCharge   (env);
+    IloExpr evDischarge(env);
+    for (int n = 0; n < numEvs; n++) {
+        evCharge    += Pevchg[n][t];
+        evDischarge += Pevdischg[n][t];
+    }
+
+    // Electric balance — Pec is a new load.
+    model.add(Pdg1[t] - Pec[t] + Pdg2[t] + Rdg1[t]
+              + Pchp1[t] + Pchp2[t]
+              + Bdischg[t] - Bchg[t]
+              + evDischarge - evCharge
+              + PGbuy[t] - PGsell[t] == Pload[t]);
+
+    // Heat balance — Hac is a new load on the heat bus.
+    model.add(Hhob[t] - Hac[t] + Hchp1[t] + Hchp2[t]
+              + HGbuy[t] - HGsell[t]
+              - Hchg[t]  + Hdischg[t] == Hload[t]);
+
+    // Cooling balance — combined chiller output meets the cooling demand.
+    model.add(0.85 * Hac[t] + 0.95 * Pec[t] == Cload[t]);
+}
+</code></pre>
+
+<h2>Results</h2>
+
+<p>
+  Solving the program produces a 24-hour multi-carrier dispatch in which the AC and the
+  EC together cover the cooling demand at every hour. The share between them shifts with
+  the hourly prices: heat-driven cooling dominates when the CHPs run with surplus heat
+  or when district-heat prices are low; electric cooling dominates during midday hours
+  when the PV plant injects free electricity that the chiller can absorb.
+</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>t</th><th>P<sub>load</sub>+P<sub>ec</sub></th><th>H<sub>load</sub>+H<sub>ac</sub></th><th>C<sub>load</sub></th>
+      <th>P<sub>Gbuy</sub>−P<sub>Gsell</sub></th><th>SoC</th>
+      <th>B<sub>chg/dchg</sub></th>
+      <th>P<sub>dg1</sub></th><th>P<sub>dg2</sub></th>
+      <th>P<sub>chp1</sub></th><th>P<sub>chp2</sub></th>
+      <th>H<sub>hob</sub></th>
+      <th>H<sub>Gbuy</sub>−H<sub>Gsell</sub></th><th>H<sub>chg/dchg</sub></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>169.58</td><td>247</td><td>100</td><td>-0.42</td><td>0.517</td><td>-50</td><td>60</td><td>0</td><td>60</td><td>100</td><td>0</td><td>95</td><td>0</td></tr>
+    <tr><td>2</td><td>175.58</td><td>242</td><td>100</td><td>0</td><td>0.684</td><td>-26.42</td><td>42</td><td>0</td><td>60</td><td>100</td><td>0</td><td>90</td><td>0</td></tr>
+    <tr><td>3</td><td>179.11</td><td>214</td><td>80</td><td>0</td><td>0.997</td><td>-49.38</td><td>77</td><td>0</td><td>60</td><td>100</td><td>0</td><td>62</td><td>0</td></tr>
+    <tr><td>4</td><td>171.58</td><td>237</td><td>100</td><td>-88.42</td><td>0.997</td><td>0</td><td>100</td><td>0</td><td>60</td><td>100</td><td>0</td><td>85</td><td>0</td></tr>
+    <tr><td>5</td><td>181.16</td><td>266</td><td>120</td><td>-143.01</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>114</td><td>0</td></tr>
+    <tr><td>6</td><td>190.74</td><td>293</td><td>135</td><td>-149.26</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>141</td><td>0</td></tr>
+    <tr><td>7</td><td>270.42</td><td>326</td><td>150</td><td>-69.58</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>174</td><td>0</td></tr>
+    <tr><td>8</td><td>264.74</td><td>318</td><td>135</td><td>-85.26</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>166</td><td>0</td></tr>
+    <tr><td>9</td><td>273.05</td><td>322</td><td>125</td><td>-81.95</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>90</td><td>0</td></tr>
+    <tr><td>10</td><td>281.84</td><td>342</td><td>130</td><td>-75.39</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>110</td><td>0</td></tr>
+    <tr><td>11</td><td>300.63</td><td>359</td><td>140</td><td>-62.37</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>127</td><td>0</td></tr>
+    <tr><td>12</td><td>320.42</td><td>376</td><td>150</td><td>-47.58</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>144</td><td>0</td></tr>
+    <tr><td>13</td><td>280.42</td><td>371</td><td>150</td><td>-92.58</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>139</td><td>0</td></tr>
+    <tr><td>14</td><td>260.84</td><td>347</td><td>130</td><td>-114.16</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>115</td><td>0</td></tr>
+    <tr><td>15</td><td>250.16</td><td>321</td><td>120</td><td>-38.06</td><td>0.997</td><td>0</td><td>100</td><td>0</td><td>60</td><td>100</td><td>80</td><td>89</td><td>0</td></tr>
+    <tr><td>16</td><td>200.37</td><td>299</td><td>110</td><td>-90.63</td><td>0.997</td><td>0</td><td>100</td><td>0</td><td>60</td><td>100</td><td>80</td><td>67</td><td>0</td></tr>
+    <tr><td>17</td><td>180.79</td><td>290</td><td>90</td><td>-187.21</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>58</td><td>0</td></tr>
+    <tr><td>18</td><td>191</td><td>283</td><td>80</td><td>-159</td><td>0.997</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>28</td><td>23</td></tr>
+    <tr><td>19</td><td>240.74</td><td>353</td><td>135</td><td>-130.67</td><td>0.776</td><td>31.41</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>201</td><td>0</td></tr>
+    <tr><td>20</td><td>280.42</td><td>376</td><td>150</td><td>-109.58</td><td>0.425</td><td>50</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>224</td><td>0</td></tr>
+    <tr><td>21</td><td>325.74</td><td>353</td><td>135</td><td>-64.26</td><td>0.075</td><td>50</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>201</td><td>0</td></tr>
+    <tr><td>22</td><td>350.63</td><td>354</td><td>140</td><td>0</td><td>0</td><td>10.63</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>202</td><td>0</td></tr>
+    <tr><td>23</td><td>300.37</td><td>309</td><td>110</td><td>-39.63</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>157</td><td>0</td></tr>
+    <tr><td>24</td><td>250.05</td><td>322</td><td>125</td><td>-9.95</td><td>0</td><td>0</td><td>100</td><td>0</td><td>60</td><td>100</td><td>0</td><td>170</td><td>0</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Closing the series</h2>
+
+<p>
+  This four-post series went from the smallest possible MILP — a 24-hour electricity-only
+  dispatch — to a three-carrier model with EVs and chillers in a few incremental steps.
+  The skeleton has not changed: a fixed horizon, a small set of decision variables per
+  hour, a single <code>IloMinimize</code> objective, and one balance equation per
+  carrier plus the inter-carrier coupling devices. From here, the natural follow-ups are
+  reserve markets, start-up costs and minimum up/down times for the dispatchable
+  generators, robust or stochastic counterparts of the same MILP, and finally the move
+  from a single microgrid to a network of them.
+</p>

@@ -1025,6 +1025,40 @@ p {
   gap: var(--spacing-xs);
 }
 
+/* Pinned posts */
+.blog-section + .blog-section {
+  margin-top: var(--spacing-2xl);
+}
+
+.blog-section-title {
+  font-family: var(--font-blog-title);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.blog-section-icon {
+  font-size: 1.1em;
+}
+
+.blog-card-pinned {
+  position: relative;
+  border-color: var(--color-accent);
+  background: linear-gradient(135deg, var(--color-bg-secondary), var(--color-bg-tertiary, var(--color-bg-secondary)));
+}
+
+.blog-card-pin {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  font-size: 1rem;
+  opacity: 0.7;
+}
+
 .blog-empty {
   text-align: center;
   padding: var(--spacing-4xl) var(--spacing-xl);

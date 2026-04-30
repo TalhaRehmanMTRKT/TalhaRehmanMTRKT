@@ -17,6 +17,21 @@
   of a small microgrid, with every modelling choice explained alongside the code.
 </p>
 
+<p>
+  The series is written with two audiences in mind. First, researchers and engineers who
+  are just stepping into optimisation for energy systems and want a single landing mark
+  that ties the <em>theory</em> (decision variables, objective, constraints, Big-M
+  reformulations) to the <em>code</em> that actually solves it. Despite the advent of
+  large language models that have made writing code dramatically easier, the underlying
+  modelling judgement &mdash; what to declare as a variable, where to bind a constraint,
+  why a Big-M is needed at all &mdash; still has to be learned, and is much easier to
+  internalise from a worked example than from an API reference. Second, the same
+  end-to-end posts (problem statement, formulation, C++ code, results) are designed to
+  be reusable as <strong>few-shot training and benchmarking material for LLMs</strong>
+  on multi-energy optimisation tasks, where each post is a self-contained
+  prompt&ndash;solution pair grounded in a real, runnable model.
+</p>
+
 <h2>The problem</h2>
 
 <p>
@@ -110,10 +125,12 @@ $$
 
 <p>
   When $u_{\text{bat}}(t) = 1$ the discharging power is forced to zero; when
-  $u_{\text{bat}}(t) = 0$ the charging power is forced to zero. We pick $M_{\text{chg}}$
-  and $M_{\text{dis}}$ equal to the physical upper bounds on $B_{\text{chg}}$ and
-  $B_{\text{dchg}}$ respectively, so the Big-M is as tight as possible. With this
-  binary variable in place the problem is a mixed-integer linear program (MILP), which
+  $u_{\text{bat}}(t) = 0$ the charging power is forced to zero. We use a single
+  large constant $M_{\text{chg}} = M_{\text{dis}} = 10^{6}$ (written
+  <code>1e6</code> in the C++ code) so that the binary indicator, rather than the
+  Big-M itself, is what fixes one side to zero. The separate SoC-derived
+  charge / discharge bounds keep the model tight in practice. With this binary
+  variable in place the problem is a mixed-integer linear program (MILP), which
   CPLEX solves with its branch-and-cut engine.
 </p>
 
@@ -174,8 +191,8 @@ float effin  = 0.95f;  // Battery efficiency
   produces a slightly leaner model.
 </p>
 
-<pre><code class="language-cpp">const float Mchg = 100.0f; // Big-M for charging power
-const float Mdis = 100.0f; // Big-M for discharging power
+<pre><code class="language-cpp">const float Mchg = 1e6f; // Big-M for charging power
+const float Mdis = 1e6f; // Big-M for discharging power
 
 IloNumVarArray  PGbuy  (env, T, 0, IloInfinity); // Grid power bought
 IloNumVarArray  PGsell (env, T, 0, IloInfinity); // Grid power sold
@@ -336,29 +353,29 @@ if (outputFile.is_open()) {
   </thead>
   <tbody>
     <tr><td>1</td><td>169</td><td>90</td><td>70</td><td>0</td><td>0</td><td>157.42</td><td>0</td><td>0.525</td><td>-68.42</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
-    <tr><td>2</td><td>175</td><td>90</td><td>70</td><td>0</td><td>0</td><td>95.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
-    <tr><td>3</td><td>179</td><td>90</td><td>70</td><td>0</td><td>0</td><td>99.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
-    <tr><td>4</td><td>171</td><td>90</td><td>70</td><td>0</td><td>0</td><td>91.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
-    <tr><td>5</td><td>181</td><td>90</td><td>70</td><td>0</td><td>0</td><td>101.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>2</td><td>175</td><td>90</td><td>70</td><td>0</td><td>0</td><td>95.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>3</td><td>179</td><td>90</td><td>70</td><td>0</td><td>0</td><td>99.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>4</td><td>171</td><td>90</td><td>70</td><td>0</td><td>0</td><td>91.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>5</td><td>181</td><td>90</td><td>70</td><td>0</td><td>0</td><td>101.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
     <tr><td>6</td><td>172</td><td>90</td><td>70</td><td>0</td><td>0</td><td>192.00</td><td>0</td><td>1.000</td><td>-100.00</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
-    <tr><td>7</td><td>270</td><td>110</td><td>90</td><td>0</td><td>0</td><td>100.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>8</td><td>264</td><td>110</td><td>90</td><td>10</td><td>10</td><td>74.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>9</td><td>273</td><td>110</td><td>90</td><td>15</td><td>15</td><td>73.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>10</td><td>281</td><td>110</td><td>90</td><td>20</td><td>20</td><td>22.24</td><td>0</td><td>0.743</td><td>0</td><td>48.76</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>7</td><td>270</td><td>110</td><td>90</td><td>0</td><td>0</td><td>51.24</td><td>0</td><td>0.743</td><td>0</td><td>48.76</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>8</td><td>264</td><td>110</td><td>90</td><td>10</td><td>10</td><td>74.00</td><td>0</td><td>0.743</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>9</td><td>273</td><td>110</td><td>90</td><td>15</td><td>15</td><td>73.00</td><td>0</td><td>0.743</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>10</td><td>281</td><td>110</td><td>90</td><td>20</td><td>20</td><td>71.00</td><td>0</td><td>0.743</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
     <tr><td>11</td><td>193</td><td>110</td><td>90</td><td>23</td><td>23</td><td>0</td><td>0</td><td>0.853</td><td>-23.00</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
-    <tr><td>12</td><td>158</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>-68.00</td><td>0.853</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>13</td><td>161</td><td>125</td><td>105</td><td>33</td><td>33</td><td>0</td><td>-75.00</td><td>0.853</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>14</td><td>162</td><td>125</td><td>105</td><td>35</td><td>35</td><td>0</td><td>-78.00</td><td>0.853</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>12</td><td>158</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>-68.00</td><td>0.853</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>13</td><td>161</td><td>125</td><td>105</td><td>33</td><td>33</td><td>0</td><td>-75.00</td><td>0.853</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>14</td><td>162</td><td>125</td><td>105</td><td>35</td><td>35</td><td>0</td><td>-78.00</td><td>0.853</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
     <tr><td>15</td><td>250</td><td>125</td><td>105</td><td>34</td><td>34</td><td>0</td><td>0</td><td>0.789</td><td>0</td><td>12.00</td><td>0</td><td>80</td><td>90</td></tr>
     <tr><td>16</td><td>260</td><td>125</td><td>105</td><td>31</td><td>31</td><td>0</td><td>0</td><td>0.642</td><td>0</td><td>28.00</td><td>0</td><td>80</td><td>90</td></tr>
     <tr><td>17</td><td>267</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>0</td><td>0.426</td><td>0</td><td>41.00</td><td>0</td><td>80</td><td>90</td></tr>
     <tr><td>18</td><td>271</td><td>125</td><td>105</td><td>10</td><td>10</td><td>0</td><td>0</td><td>0.000</td><td>0</td><td>81.00</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>19</td><td>284</td><td>110</td><td>90</td><td>0</td><td>0</td><td>114.00</td><td>0</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>20</td><td>167</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-3.00</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>21</td><td>128</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-42.00</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>22</td><td>134</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-36.00</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>23</td><td>144</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-26.00</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>24</td><td>150</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-20.00</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>19</td><td>284</td><td>110</td><td>90</td><td>0</td><td>0</td><td>114.00</td><td>0</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>20</td><td>167</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-3.00</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>21</td><td>128</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-42.00</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>22</td><td>134</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-36.00</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>23</td><td>144</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-26.00</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>24</td><td>150</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-20.00</td><td>0.000</td><td>0</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
   </tbody>
 </table>
 </div>
@@ -376,6 +393,20 @@ if (outputFile.is_open()) {
   to inspect. Natural extensions include adding binary on/off variables for the
   dispatchable generators, modelling start-up costs and minimum up/down times,
   introducing reserve requirements, and accounting for forecast uncertainty through
-  robust or stochastic formulations. We will pick these up in later posts of this
-  series.
+  robust or stochastic formulations.
 </p>
+
+<p>The next three posts of this series build on exactly this skeleton:</p>
+
+<ul>
+  <li><a href="?id=p2">Post 2 &mdash; From Single Energy Microgrid to Multi Energy</a>:
+      adds the heat sector (CHPs, a heat-only boiler, a heat tank, and bidirectional
+      district-heat trading) on top of the electric layer, with a second balance
+      equation and the CHP heat-to-power coupling.</li>
+  <li><a href="?id=p3">Post 3 &mdash; Adding Electric Vehicles as Flexible Storage</a>:
+      introduces a fleet of plug-in EVs as time-windowed storage on the electric bus,
+      each with its own arrival, departure, capacity and a minimum departure SoC.</li>
+  <li><a href="?id=p4">Post 4 &mdash; Closing the Loop with Cooling</a>: adds the
+      cooling sector via an absorption chiller and an electric chiller, finally coupling
+      all three energy carriers (electricity, heat, cooling) into a single MILP.</li>
+</ul>

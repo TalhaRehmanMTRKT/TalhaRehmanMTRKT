@@ -187,9 +187,36 @@
       return;
     }
 
+    var pinned  = filtered.filter(function (p) { return p.pinned; });
+    var regular = filtered.filter(function (p) { return !p.pinned; });
+
+    var html = '';
+    if (pinned.length) {
+      html += '<section class="blog-section blog-section-pinned" aria-label="Pinned posts">';
+      html += '<h2 class="blog-section-title"><span class="blog-section-icon">📌</span> Pinned</h2>';
+      html += renderBlogCards(pinned, true);
+      html += '</section>';
+    }
+    if (regular.length) {
+      html += '<section class="blog-section blog-section-all" aria-label="All posts">';
+      if (pinned.length) {
+        html += '<h2 class="blog-section-title">All posts</h2>';
+      }
+      html += renderBlogCards(regular, false);
+      html += '</section>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  function renderBlogCards(posts, isPinned) {
     var html = '<div class="blog-cards">';
-    filtered.forEach(function (post) {
-      html += '<a href="post.html?id=' + encodeURIComponent(post.id) + '" class="blog-card">';
+    posts.forEach(function (post) {
+      var cls = 'blog-card' + (isPinned ? ' blog-card-pinned' : '');
+      html += '<a href="post.html?id=' + encodeURIComponent(post.id) + '" class="' + cls + '">';
+      if (isPinned) {
+        html += '<span class="blog-card-pin" aria-hidden="true">📌</span>';
+      }
       html += '<div class="blog-card-date">' + formatDate(post.date) + '</div>';
       html += '<div class="blog-card-title">' + escapeHtml(post.title) + '</div>';
       if (post.description) {
@@ -206,8 +233,7 @@
       html += '</a>';
     });
     html += '</div>';
-
-    container.innerHTML = html;
+    return html;
   }
 
   // ── Post Viewer ───────────────────────────────────────────────

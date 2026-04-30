@@ -1,0 +1,269 @@
+<!--
+  Auto-generated from:
+    trk-blogs-docs/p3.tex            (prose, metadata, structure)
+    trk-blogs/p3/main.cpp            (code snippets)
+    trk-blogs/p3/output.csv          (results table)
+    TalhaRehmanMTRKT/assets/p3/      (figures)
+
+  Do not edit by hand. Re-generate with Copilot when any of the source files change.
+-->
+
+<p>
+  The <a href="?id=p2">previous post</a> extended the electricity-only dispatch into a
+  true multi-energy model: two CHPs, a heat-only boiler, a heat tank, and a district-heat
+  trading link were added on top of the existing electric layer. Two balance equations
+  (electric and heat) and a CHP heat-to-power coupling tied the two carriers together.
+</p>
+
+<p>
+  That model still treats every storage device as if it were always available. Real
+  flexibility is rarely that polite: most of it sits in batteries that only connect for a
+  few hours per day, the most visible example being plug-in <em>electric vehicles</em>
+  (EVs). A fleet of EVs plugged into a microgrid is a time-windowed storage portfolio:
+  each vehicle can charge or discharge only between its arrival and its departure, and it
+  must leave with enough energy to be useful for its owner.
+</p>
+
+<p>In this post we keep the entire model from the previous post unchanged and add an EV fleet on top of the electric bus.</p>
+
+<h2>Mathematical formulation</h2>
+
+<h3>Decision variables</h3>
+
+<p>For every vehicle $n \in \{1,\dots,N_{\text{ev}}\}$ and every hour $t \in \{1,\dots,T\}$ we add three continuous variables:</p>
+
+<ul>
+  <li>$P_{\text{ev,chg}}^{n}(t),\, P_{\text{ev,dchg}}^{n}(t) \ge 0$: charging /
+      discharging power of vehicle $n$.</li>
+  <li>$\text{evsoc}^{n}(t) \in [0,1]$: state of charge of vehicle $n$.</li>
+  <li>$u_{\text{ev}}^{n}(t) \in \{0,1\}$: per-vehicle charge / discharge selector.</li>
+</ul>
+
+<p>The fleet is parameterised by per-vehicle arrival hour $t_a^{n}$, departure hour $t_d^{n}$, capacity $C_{\text{ev}}^{n}$, and initial SoC $\text{evsoc}_{\text{ini}}^{n}$.</p>
+
+<h3>Per-vehicle scheduling constraints</h3>
+
+<p>Three regimes are needed:</p>
+
+$$
+\begin{aligned}
+& t = t_a^{n}: \;
+  \text{evsoc}^{n}(t)
+  = \text{evsoc}_{\text{ini}}^{n}
+  + \frac{\eta_{\text{ev}} P_{\text{ev,chg}}^{n}(t) - P_{\text{ev,dchg}}^{n}(t)/\eta_{\text{ev}}}{C_{\text{ev}}^{n}}, \\
+& t_a^{n} < t \le t_d^{n}: \;
+  \text{evsoc}^{n}(t)
+  = \text{evsoc}^{n}(t-1)
+  + \frac{\eta_{\text{ev}} P_{\text{ev,chg}}^{n}(t) - P_{\text{ev,dchg}}^{n}(t)/\eta_{\text{ev}}}{C_{\text{ev}}^{n}}, \\
+& \text{otherwise}: \;
+  P_{\text{ev,chg}}^{n}(t) = P_{\text{ev,dchg}}^{n}(t) = 0.
+\end{aligned}
+$$
+
+<h3>Departure-SoC constraint</h3>
+
+<p>To prevent the optimiser from draining the vehicle for cheap energy and returning it empty, we require it to leave at least half full:</p>
+
+$$ \text{evsoc}^{n}(t_d^{n}) \;\ge\; 0.5, \qquad n = 1,\dots,N_{\text{ev}}. $$
+
+<h3>Mutual exclusion across all storage units</h3>
+
+<p>As in the previous posts, every storage device gets a Big-M binary selector that forbids charging and discharging in the same hour:</p>
+
+$$
+B_{\text{chg}}(t) \le M\, u_{\text{bat}}(t), \quad B_{\text{dchg}}(t) \le M\,(1 - u_{\text{bat}}(t)),
+$$
+$$
+H_{\text{chg}}(t) \le M\, u_{\text{hst}}(t), \quad H_{\text{dchg}}(t) \le M\,(1 - u_{\text{hst}}(t)),
+$$
+$$
+P_{\text{ev,chg}}^{n}(t) \le M\, u_{\text{ev}}^{n}(t), \quad P_{\text{ev,dchg}}^{n}(t) \le M\,(1 - u_{\text{ev}}^{n}(t)),
+$$
+
+<p>with $M = 10^{6}$ (written <code>1e6</code> in the C++ code).</p>
+
+<h3>Modified power balance</h3>
+
+<p>The electric balance from the previous post gains a fleet-wide net term $\sum_n (P_{\text{ev,dchg}}^{n}(t) - P_{\text{ev,chg}}^{n}(t))$:</p>
+
+$$
+\begin{aligned}
+& P_{\text{dg1}}(t) + P_{\text{dg2}}(t) + R_{\text{dg1}}(t)
++ P_{\text{chp1}}(t) + P_{\text{chp2}}(t)
++ B_{\text{dchg}}(t) - B_{\text{chg}}(t) \\
+& \quad
++ \sum_{n=1}^{N_{\text{ev}}} \big( P_{\text{ev,dchg}}^{n}(t) - P_{\text{ev,chg}}^{n}(t) \big)
++ P_{\text{Gbuy}}(t) - P_{\text{Gsell}}(t)
+= P_{\text{load}}(t).
+\end{aligned}
+$$
+
+<p>The heat balance is unchanged.</p>
+
+<h2>Implementation in C++/CPLEX</h2>
+
+<p>The complete code lives in <code>trk-blogs/p3/main.cpp</code> and reuses every single line of the previous post that was not directly affected by the EV extension. The new pieces are listed below.</p>
+
+<h3>Fleet input data</h3>
+
+<pre><code class="language-cpp">int   numEvs   = 5;                        // Total number of EVs
+float Eveffin  = 0.90f;                    // EV charge/discharge efficiency
+
+// Per-vehicle arrival hour, departure hour, initial SoC and battery capacity.
+// EV n is grid-connected for t in [ta[n], td[n]]; outside that window
+// its charge and discharge powers are clamped to zero.
+int*   ta       = new int[numEvs]   { 2, 4, 6, 9, 9 };
+int*   td       = new int[numEvs]   { 6, 7, 9, 12, 16 };
+float* evsocini = new float[numEvs] { 0.30f, 0.20f, 0.10f, 0.70f, 0.40f };
+float* evcap    = new float[numEvs] { 38.3f, 47.5f, 28.9f, 56.0f, 52.0f };
+</code></pre>
+
+<h3>Two-dimensional decision variables</h3>
+
+<p>CPLEX's <code>IloArray&lt;IloNumVarArray&gt;</code> typedef gives a clean way to expose vectors of vectors of variables, indexed first by vehicle and then by hour. A parallel <code>IloArray&lt;IloBoolVarArray&gt;</code> (<code>BoolVar2D</code>) holds one binary $u_{\text{ev}}^{n}(t)$ per vehicle and per hour.</p>
+
+<pre><code class="language-cpp">IloBoolVarArray ubat(env, T);   // battery charge/discharge selector
+IloBoolVarArray uhst(env, T);   // heat-storage charge/discharge selector
+NumVar2D  Pevchg   (env, numEvs);
+NumVar2D  Pevdischg(env, numEvs);
+NumVar2D  evsoc    (env, numEvs);
+BoolVar2D uev      (env, numEvs);
+for (int n = 0; n < numEvs; n++)
+{
+    Pevchg[n]    = IloNumVarArray (env, T, 0, evcap[n], ILOFLOAT);
+    Pevdischg[n] = IloNumVarArray (env, T, 0, evcap[n], ILOFLOAT);
+    evsoc[n]     = IloNumVarArray (env, T, 0, 1,        ILOFLOAT);
+    uev[n]       = IloBoolVarArray(env, T);
+}
+</code></pre>
+
+<h3>Per-vehicle scheduling constraints</h3>
+
+<pre><code class="language-cpp">for (int t = 0; t < T; t++)
+{
+    for (int n = 0; n < numEvs; n++)
+    {
+        if (t == ta[n])
+        {
+            model.add(evsoc[n][t] == evsocini[n]
+                      + (Eveffin * Pevchg[n][t] - Pevdischg[n][t] / Eveffin) / evcap[n]);
+            model.add(Pevchg[n][t]    <= evcap[n] * (1 - evsocini[n]) / Eveffin);
+            model.add(Pevdischg[n][t] <= evcap[n] * evsocini[n] * Eveffin);
+            // Big-M mutex: per-vehicle charge XOR discharge
+            model.add(Pevchg[n][t]    <= 1e6 *      uev[n][t]);
+            model.add(Pevdischg[n][t] <= 1e6 * (1 - uev[n][t]));
+        }
+        else if (t > ta[n] && t <= td[n])
+        {
+            model.add(evsoc[n][t] == evsoc[n][t - 1]
+                      + (Eveffin * Pevchg[n][t] - Pevdischg[n][t] / Eveffin) / evcap[n]);
+            model.add(Pevchg[n][t]    <= evcap[n] * (1 - evsoc[n][t - 1]) / Eveffin);
+            model.add(Pevdischg[n][t] <= evcap[n] * evsoc[n][t - 1] * Eveffin);
+            model.add(Pevchg[n][t]    <= 1e6 *      uev[n][t]);
+            model.add(Pevdischg[n][t] <= 1e6 * (1 - uev[n][t]));
+            if (t == td[n]) model.add(evsoc[n][t] >= 0.5);
+        }
+        else
+        {
+            model.add(Pevchg[n][t]    == 0);
+            model.add(Pevdischg[n][t] == 0);
+        }
+    }
+}
+</code></pre>
+
+<h3>Power balance with the EV fleet term</h3>
+
+<pre><code class="language-cpp">for (int t = 0; t < T; t++)
+{
+    IloExpr evCharge   (env);
+    IloExpr evDischarge(env);
+    for (int n = 0; n < numEvs; n++) {
+        evCharge    += Pevchg[n][t];
+        evDischarge += Pevdischg[n][t];
+    }
+
+    // Electric balance: EV charging is a load, EV discharging is a source.
+    model.add(Pdg1[t] + Pdg2[t] + Rdg1[t]
+              + Pchp1[t] + Pchp2[t]
+              + Bdischg[t] - Bchg[t]
+              + evDischarge - evCharge
+              + PGbuy[t] - PGsell[t] == Pload[t]);
+
+    // Heat balance is unchanged with respect to p2.
+    model.add(Hhob[t] + Hchp1[t] + Hchp2[t]
+              + HGbuy[t] - HGsell[t]
+              - Hchg[t]  + Hdischg[t] == Hload[t]);
+}
+</code></pre>
+
+<h2>Results</h2>
+
+<p>
+  Solving the program reveals the qualitative behaviour you would expect: EVs that arrive
+  at low-price hours charge first; EVs whose connection window straddles a price peak get
+  used for vehicle-to-grid discharge; and the at-departure constraint forces a final
+  charging burst on vehicles whose SoC would otherwise have been drained too aggressively.
+  The table below shows the per-vehicle charge / discharge schedule (negative values are
+  charging, positive are discharging); see <code>trk-blogs/p3/output.csv</code> for the
+  full 34-column dispatch.
+</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>t</th>
+      <th>P<sub>ev,chg</sub><sup>1</sup></th><th>P<sub>ev,dchg</sub><sup>1</sup></th>
+      <th>P<sub>ev,chg</sub><sup>2</sup></th><th>P<sub>ev,dchg</sub><sup>2</sup></th>
+      <th>P<sub>ev,chg</sub><sup>3</sup></th><th>P<sub>ev,dchg</sub><sup>3</sup></th>
+      <th>P<sub>ev,chg</sub><sup>4</sup></th><th>P<sub>ev,dchg</sub><sup>4</sup></th>
+      <th>P<sub>ev,chg</sub><sup>5</sup></th><th>P<sub>ev,dchg</sub><sup>5</sup></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>2</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>3</td><td>-8.51</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>4</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>5</td><td>0</td><td>0</td><td>-15.83</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>6</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>7</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>8</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>9</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>10</td><td>0</td><td>0</td><td>0</td><td>0</td><td>-12.84</td><td>0</td><td>0</td><td>10.08</td><td>0</td><td>0</td></tr>
+    <tr><td>11</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>12</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>13</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>14</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>15</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>-5.78</td><td>0</td></tr>
+    <tr><td>16</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>18</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>19</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>20</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>21</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>22</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>23</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>24</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Where to go next</h2>
+
+<p>
+  A second user-side carrier we have ignored so far is <em>cooling</em>. Adding it
+  requires not only a new balance equation but also two new conversion devices &mdash; an
+  absorption chiller that turns heat into cooling and an electric chiller that turns
+  electricity into cooling &mdash; which properly couples all three carriers into a
+  single optimisation problem. We add it in the <a href="?id=p4">next post</a>, which
+  closes the series:
+</p>
+
+<ul>
+  <li><a href="?id=p4">Post 4 &mdash; Closing the Loop with Cooling</a>: introduces the
+    cooling load $C_{\text{load}}(t)$, an absorption chiller fed by heat, and an
+    electric chiller fed by power; the resulting three-carrier MILP keeps all the
+    storage and EV machinery from posts&nbsp;1&ndash;3 unchanged.</li>
+</ul>

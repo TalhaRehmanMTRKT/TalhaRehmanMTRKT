@@ -1,0 +1,348 @@
+<!--
+  Auto-generated from:
+    trk-blogs-docs/p2.tex            (prose, metadata, structure)
+    trk-blogs/p2/main.cpp            (code snippets)
+    trk-blogs/p2/output.csv          (results table)
+    TalhaRehmanMTRKT/assets/p2/      (figures)
+
+  Do not edit by hand. Re-generate with Copilot when any of the source files change.
+-->
+
+<p>
+  In the <a href="?id=p1">previous post</a> we wrote a small C++/CPLEX program that
+  solved the 24-hour economic dispatch of an electricity-only microgrid: two dispatchable
+  generators, two PV units, a battery, and a grid tie. The goal was to minimise operating
+  cost subject to a single power-balance equation per hour, with a Big-M binary forbidding
+  simultaneous charging and discharging of the battery.
+</p>
+
+<p>
+  Real systems rarely live on a single energy carrier. Buildings need heat, data centres
+  need cooling, and modern microgrids couple all of these through devices that translate
+  one carrier into another. This post introduces the heat sector, which is the simplest
+  non-trivial multi-energy extension and the foundation everything else in this series
+  will build on.
+</p>
+
+<h2>Recap and what changes</h2>
+
+<p>The new ingredients are:</p>
+
+<ul>
+  <li>A <em>heat-only boiler</em> (HOB) that burns fuel to produce heat.</li>
+  <li>Two <em>combined heat and power</em> units (CHP-1, CHP-2) that produce
+      electricity and heat simultaneously, with a fixed heat-to-power ratio $k_i$.</li>
+  <li>A <em>heat storage tank</em> with its own state of charge, round-trip
+      efficiency, and capacity.</li>
+  <li>A bidirectional connection to a <em>district heat network</em>, with hourly
+      buying and selling prices.</li>
+</ul>
+
+<p>
+  The electric layer (DGs, PV, battery, grid tie) is unchanged in spirit; the equations
+  from the previous post still hold. We add a second balance equation for heat, and a
+  coupling constraint between each CHP's electric and heat outputs.
+</p>
+
+<h2>Mathematical formulation</h2>
+
+<h3>Decision variables</h3>
+
+<p>We keep all variables from the previous post and add, for each hour $t \in \{1,\dots,T\}$:</p>
+
+<ul>
+  <li>$P_{\text{chp1}}(t),\, P_{\text{chp2}}(t)$: CHP electric outputs, bounded between
+      a minimum and a maximum operating point.</li>
+  <li>$H_{\text{chp1}}(t),\, H_{\text{chp2}}(t)$: CHP heat outputs.</li>
+  <li>$H_{\text{hob}}(t)$: heat output of the heat-only boiler.</li>
+  <li>$H_{\text{Gbuy}}(t),\, H_{\text{Gsell}}(t) \ge 0$: heat bought from / sold to the
+      district network.</li>
+  <li>$H_{\text{chg}}(t),\, H_{\text{dchg}}(t) \ge 0$: heat-storage charging /
+      discharging power.</li>
+  <li>$\text{HSSsoc}(t) \in [0,1]$: heat-storage state of charge.</li>
+  <li>$u_{\text{hst}}(t) \in \{0,1\}$: heat-storage charge / discharge selector.</li>
+</ul>
+
+<h3>Objective</h3>
+
+<p>The objective gains explicit operating-cost terms for the new generators and a heat-trading term mirroring the electric one:</p>
+
+$$
+\min \sum_{t=1}^{T} \Big[
+  C_{\text{dg1}} P_{\text{dg1}}(t) + C_{\text{dg2}} P_{\text{dg2}}(t)
+  + C_{\text{chp1}} P_{\text{chp1}}(t) + C_{\text{chp2}} P_{\text{chp2}}(t)
+  + C_{\text{hob}} H_{\text{hob}}(t)
+$$
+$$
+  +\, C_{\text{Gbuy}}(t) P_{\text{Gbuy}}(t) - C_{\text{Gsell}}(t) P_{\text{Gsell}}(t)
+  + C_{\text{Hbuy}}(t) H_{\text{Gbuy}}(t) - C_{\text{Hsell}}(t) H_{\text{Gsell}}(t)
+\Big].
+$$
+
+<p>
+  Note that the CHPs are paid only for their <em>electric</em> output: the co-produced
+  heat is a free by-product of the same fuel burn, an assumption that already makes them
+  economically attractive on a heat-loaded hour.
+</p>
+
+<h3>Coupling and balance constraints</h3>
+
+<p><strong>CHP heat-to-power coupling.</strong> A back-pressure CHP cannot vary its heat and power independently. We use the simplest possible model, a fixed ratio $k_i$:</p>
+
+$$ H_{\text{chp},i}(t) = k_i\, P_{\text{chp},i}(t), \qquad i \in \{1,2\}. $$
+
+<p><strong>Heat balance.</strong> An additional balance equation closes the heat sector:</p>
+
+$$
+H_{\text{hob}}(t) + H_{\text{chp1}}(t) + H_{\text{chp2}}(t)
++ H_{\text{Gbuy}}(t) - H_{\text{Gsell}}(t)
++ H_{\text{dchg}}(t) - H_{\text{chg}}(t)
+= H_{\text{load}}(t).
+$$
+
+<p><strong>Heat-storage dynamics.</strong> Mirror the battery: with efficiency $\eta_H$ and capacity $H_{\text{ss,max}}$,</p>
+
+$$
+\text{HSSsoc}(t) = \text{HSSsoc}(t-1)
++ \frac{\eta_H\, H_{\text{chg}}(t) - H_{\text{dchg}}(t)/\eta_H}{H_{\text{ss,max}}},
+$$
+
+<p>with $\text{HSSsoc}(0) = 0.5$ for this example.</p>
+
+<p><strong>Mutual exclusion of charge and discharge.</strong> A purely linear relaxation would happily charge and discharge a storage at the same time to game round-trip losses. As in the previous post we forbid this with a Big-M binary, now applied to <em>both</em> storage units:</p>
+
+$$
+B_{\text{chg}}(t) \le M\, u_{\text{bat}}(t), \quad B_{\text{dchg}}(t) \le M\,(1 - u_{\text{bat}}(t)),
+$$
+$$
+H_{\text{chg}}(t) \le M\, u_{\text{hst}}(t), \quad H_{\text{dchg}}(t) \le M\,(1 - u_{\text{hst}}(t)),
+$$
+
+<p>with $u_{\text{bat}}(t), u_{\text{hst}}(t) \in \{0,1\}$ and $M = 10^{6}$ (written <code>1e6</code> in the C++ code).</p>
+
+<p><strong>Power balance.</strong> The electric balance gains the CHP injections but is otherwise unchanged from the previous post:</p>
+
+$$
+P_{\text{dg1}}(t) + P_{\text{dg2}}(t) + R_{\text{dg1}}(t)
++ P_{\text{chp1}}(t) + P_{\text{chp2}}(t)
++ B_{\text{dchg}}(t) - B_{\text{chg}}(t)
++ P_{\text{Gbuy}}(t) - P_{\text{Gsell}}(t)
+= P_{\text{load}}(t).
+$$
+
+<h2>Implementation in C++/CPLEX</h2>
+
+<p>The complete code lives in <code>trk-blogs/p2/main.cpp</code>. It follows the same skeleton as the previous post; we walk only through the new pieces.</p>
+
+<h3>Input data</h3>
+
+<p>We add hourly heat-demand and heat-trading-price arrays, plus the parameters of the heat sector (HOB and CHP costs, heat-storage capacity and efficiency, the CHP heat-to-power ratios $k_1, k_2$).</p>
+
+<pre><code class="language-cpp">// Generation costs (per kW)
+int Cdg1  = 135;
+int Cdg2  = 140;
+int Chob  = 80;
+int Cchp1 = 150;
+int Cchp2 = 145;
+
+// Storage parameters
+float socini = 0.2f;   // Initial battery SoC
+int   Pbmax  = 100;    // Battery capacity (kWh)
+float effin  = 0.95f;  // Battery efficiency
+int   Hssmax = 50;     // Heat-storage capacity (kWh-th)
+float Heffin = 0.95f;  // Heat-storage efficiency
+
+// CHP heat-to-electric ratios
+float k1 = 1.2f;
+float k2 = 0.8f;
+
+// Demands, trading prices, PV forecast: 24-hour arrays (see main.cpp).
+</code></pre>
+
+<h3>Decision variables</h3>
+
+<p>The electric-side variables are the same as before. The heat side adds the CHP, HOB, heat-grid and heat-storage variables, plus the two binary selectors $u_{\text{bat}}, u_{\text{hst}}$ used below to enforce charge / discharge mutual exclusion.</p>
+
+<pre><code class="language-cpp">// Electric side
+IloNumVarArray  PGbuy  (env, T, 0, IloInfinity);
+IloNumVarArray  PGsell (env, T, 0, IloInfinity);
+IloNumVarArray  statoc (env, T, 0, 1);
+IloNumVarArray  Bchg   (env, T, 0, 50);
+IloNumVarArray  Bdischg(env, T, 0, 50);
+IloBoolVarArray ubat   (env, T);              // 1 = charge, 0 = discharge
+IloNumVarArray  Pdg1   (env, T, 0, 100, ILOINT);
+IloNumVarArray  Pdg2   (env, T, 0,  80, ILOINT);
+IloNumVarArray  Pchp1  (env, T, 30, 60, ILOINT);
+IloNumVarArray  Pchp2  (env, T, 50,100, ILOINT);
+
+// Heat side
+IloNumVarArray  HGbuy  (env, T, 0, IloInfinity, ILOINT);
+IloNumVarArray  HGsell (env, T, 0, IloInfinity, ILOINT);
+IloNumVarArray  HSSsoc (env, T, 0, 1);
+IloNumVarArray  Hchg   (env, T, 0, 50, ILOINT);
+IloNumVarArray  Hdischg(env, T, 0, 50, ILOINT);
+IloBoolVarArray uhst   (env, T);              // 1 = charge, 0 = discharge
+IloNumVarArray  Hhob   (env, T, 0, 80, ILOINT);
+IloNumVarArray  Hchp1  (env, T, 0, IloInfinity);
+IloNumVarArray  Hchp2  (env, T, 0, IloInfinity);
+</code></pre>
+
+<h3>Objective</h3>
+
+<pre><code class="language-cpp">IloExpr objective(env);
+for (int t = 0; t < T; t++)
+{
+    objective += Cdg1  * Pdg1[t]  + Cdg2  * Pdg2[t]
+               + Cchp1 * Pchp1[t] + Cchp2 * Pchp2[t]
+               + Chob  * Hhob[t]
+               + CGbuy[t] * PGbuy[t] - CGsell[t] * PGsell[t]
+               + CHbuy[t] * HGbuy[t] - CHsell[t] * HGsell[t];
+}
+model.add(IloMinimize(env, objective));
+</code></pre>
+
+<h3>Constraints</h3>
+
+<p>The new constraints split naturally in three blocks: device bounds and the CHP heat-to-power coupling; storage dynamics for both the electric battery and the heat tank; and the two balance equations.</p>
+
+<pre><code class="language-cpp">for (int t = 0; t < T; t++)
+{
+    // Dispatchable-generator output bounds
+    model.add(Pdg1[t] <= 100);
+    model.add(Pdg2[t] <=  80);
+
+    // Heat-only boiler bound
+    model.add(Hhob[t] <= 80);
+
+    // CHP electric output bands (must be on, between min and max)
+    model.add(Pchp1[t] >= 30); model.add(Pchp1[t] <= 60);
+    model.add(Pchp2[t] >= 50); model.add(Pchp2[t] <= 100);
+
+    // CHP heat output is locked to its electric output through a fixed ratio
+    model.add(Hchp1[t] == k1 * Pchp1[t]);
+    model.add(Hchp2[t] == k2 * Pchp2[t]);
+}
+</code></pre>
+
+<pre><code class="language-cpp">for (int t = 0; t < T; t++)
+{
+    // Big-M mutual exclusion: charge XOR discharge for each storage unit
+    model.add(Bchg[t]    <= 1e6 *      ubat[t]);
+    model.add(Bdischg[t] <= 1e6 * (1 - ubat[t]));
+    model.add(Hchg[t]    <= 1e6 *      uhst[t]);
+    model.add(Hdischg[t] <= 1e6 * (1 - uhst[t]));
+
+    if (t == 0) {
+        model.add(statoc[t] == socini
+                  + ((effin * Bchg[t] - Bdischg[t] / effin) / Pbmax));
+        model.add(Bchg[t]    <= (Pbmax * (1 - socini) / effin));
+        model.add(Bdischg[t] <= (Pbmax * socini * effin));
+
+        model.add(HSSsoc[t] == 0.5
+                  + ((Heffin * Hchg[t] - Hdischg[t] / Heffin) / Hssmax));
+        model.add(Hchg[t]    <= (Hssmax * 0.5 / Heffin));
+        model.add(Hdischg[t] <= (Hssmax * 0.5 * Heffin));
+    } else {
+        model.add(statoc[t] == statoc[t - 1]
+                  + ((effin * Bchg[t] - Bdischg[t] / effin) / Pbmax));
+        model.add(Bchg[t]    <= (Pbmax * (1 - statoc[t - 1])) / effin);
+        model.add(Bdischg[t] <= Pbmax * statoc[t - 1] * effin);
+
+        model.add(HSSsoc[t] == HSSsoc[t - 1]
+                  + ((Heffin * Hchg[t] - Hdischg[t] / Heffin) / Hssmax));
+        model.add(Hchg[t]    <= (Hssmax * (1 - HSSsoc[t - 1]) / Heffin));
+        model.add(Hdischg[t] <= Hssmax * HSSsoc[t - 1] * Heffin);
+    }
+}
+</code></pre>
+
+<pre><code class="language-cpp">for (int t = 0; t < T; t++)
+{
+    // Electric balance
+    model.add(Pdg1[t] + Pdg2[t] + Rdg1[t]
+              + Pchp1[t] + Pchp2[t]
+              + Bdischg[t] - Bchg[t]
+              + PGbuy[t]   - PGsell[t] == Pload[t]);
+
+    // Heat balance
+    model.add(Hhob[t] + Hchp1[t] + Hchp2[t]
+              + HGbuy[t] - HGsell[t]
+              - Hchg[t]  + Hdischg[t] == Hload[t]);
+}
+</code></pre>
+
+<h2>Results</h2>
+
+<p>
+  Solving the program with the input data above produces a 24-hour co-dispatch in which
+  the CHPs run close to their economic optimum, covering most of the heat demand
+  directly, while the HOB and the heat storage absorb the residual mismatch. The
+  electric balance then uses the cheapest combination of DG output, PV, CHP electric
+  by-product, and grid exchange.
+</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>t</th><th>P<sub>load</sub></th><th>H<sub>load</sub></th><th>R<sub>dg1</sub></th>
+      <th>P<sub>Gbuy</sub></th><th>P<sub>Gsell</sub></th><th>SoC</th>
+      <th>B<sub>chg</sub></th><th>B<sub>dchg</sub></th>
+      <th>P<sub>dg1</sub></th><th>P<sub>dg2</sub></th>
+      <th>P<sub>chp1</sub></th><th>P<sub>chp2</sub></th>
+      <th>H<sub>hob</sub></th><th>H<sub>chp1</sub></th><th>H<sub>chp2</sub></th>
+      <th>H<sub>Gbuy</sub></th><th>H<sub>Gsell</sub></th>
+      <th>H<sub>chg</sub></th><th>H<sub>dchg</sub></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>169</td><td>130</td><td>0</td><td>0.21</td><td>0</td><td>0.668</td><td>-49.21</td><td>0</td><td>58</td><td>0</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>0</td><td>-21</td><td>-1</td><td>0</td></tr>
+    <tr><td>2</td><td>175</td><td>125</td><td>0</td><td>0</td><td>0</td><td>0.668</td><td>0</td><td>0</td><td>15</td><td>0</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>0</td><td>-27</td><td>0</td><td>0</td></tr>
+    <tr><td>3</td><td>179</td><td>120</td><td>0</td><td>0</td><td>0</td><td>1.000</td><td>-35</td><td>0</td><td>54</td><td>0</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>0</td><td>-32</td><td>0</td><td>0</td></tr>
+    <tr><td>4</td><td>171</td><td>120</td><td>0</td><td>0</td><td>-89</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>0</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>0</td><td>-32</td><td>0</td><td>0</td></tr>
+    <tr><td>5</td><td>181</td><td>125</td><td>0</td><td>0</td><td>-159</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>0</td><td>-27</td><td>0</td><td>0</td></tr>
+    <tr><td>6</td><td>190</td><td>135</td><td>0</td><td>0</td><td>-150</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>0</td><td>-17</td><td>0</td><td>0</td></tr>
+    <tr><td>7</td><td>270</td><td>150</td><td>0</td><td>0</td><td>-70</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>0</td><td>-2</td><td>0</td><td>0</td></tr>
+    <tr><td>8</td><td>264</td><td>160</td><td>10</td><td>0</td><td>-86</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>9</td><td>0</td><td>-1</td><td>0</td></tr>
+    <tr><td>9</td><td>273</td><td>175</td><td>15</td><td>0</td><td>-82</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>72</td><td>80</td><td>0</td><td>-57</td><td>0</td><td>0</td></tr>
+    <tr><td>10</td><td>281</td><td>190</td><td>20</td><td>0</td><td>-79</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>72</td><td>80</td><td>0</td><td>-65</td><td>0</td><td>23</td></tr>
+    <tr><td>11</td><td>300</td><td>195</td><td>23</td><td>0</td><td>-63</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>72</td><td>80</td><td>0</td><td>-38</td><td>0</td><td>1</td></tr>
+    <tr><td>12</td><td>320</td><td>200</td><td>28</td><td>0</td><td>-48</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>72</td><td>80</td><td>0</td><td>-33</td><td>0</td><td>1</td></tr>
+    <tr><td>13</td><td>280</td><td>195</td><td>33</td><td>0</td><td>-93</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>72</td><td>80</td><td>0</td><td>-37</td><td>0</td><td>0</td></tr>
+    <tr><td>14</td><td>260</td><td>195</td><td>35</td><td>0</td><td>-115</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>72</td><td>80</td><td>0</td><td>-37</td><td>0</td><td>0</td></tr>
+    <tr><td>15</td><td>250</td><td>180</td><td>34</td><td>0</td><td>-44</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>0</td><td>60</td><td>100</td><td>80</td><td>72</td><td>80</td><td>0</td><td>-52</td><td>0</td><td>0</td></tr>
+    <tr><td>16</td><td>200</td><td>170</td><td>31</td><td>0</td><td>-91</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>0</td><td>60</td><td>100</td><td>80</td><td>72</td><td>80</td><td>0</td><td>-62</td><td>0</td><td>0</td></tr>
+    <tr><td>17</td><td>180</td><td>185</td><td>28</td><td>0</td><td>-188</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>72</td><td>80</td><td>0</td><td>-47</td><td>0</td><td>0</td></tr>
+    <tr><td>18</td><td>190</td><td>190</td><td>10</td><td>0</td><td>-160</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>80</td><td>72</td><td>80</td><td>0</td><td>-42</td><td>0</td><td>0</td></tr>
+    <tr><td>19</td><td>240</td><td>195</td><td>0</td><td>0</td><td>-100</td><td>1.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>43</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>20</td><td>280</td><td>200</td><td>0</td><td>0</td><td>-95</td><td>0.632</td><td>0</td><td>35</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>48</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>21</td><td>325</td><td>195</td><td>0</td><td>0</td><td>-65</td><td>0.105</td><td>0</td><td>50</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>43</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>22</td><td>350</td><td>190</td><td>0</td><td>0</td><td>0</td><td>0.000</td><td>0</td><td>10</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>38</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>23</td><td>300</td><td>180</td><td>0</td><td>0</td><td>-40</td><td>0.000</td><td>0</td><td>0</td><td>100</td><td>80</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>28</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>24</td><td>250</td><td>175</td><td>0</td><td>0</td><td>-10</td><td>0.000</td><td>0</td><td>0</td><td>100</td><td>0</td><td>60</td><td>100</td><td>0</td><td>72</td><td>80</td><td>23</td><td>0</td><td>0</td><td>0</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Where to go next</h2>
+
+<p>
+  A natural next step is to bring <em>Electric Vehicles</em> into the electric layer.
+  Their arrival and departure times turn the EV fleet into a time-windowed flexible
+  storage that is simultaneously richer and harder to schedule than a fixed battery. We
+  add it in the <a href="?id=p3">next post</a>; the rest of the model &mdash; heat sector,
+  storage dynamics, and the two balance equations introduced here &mdash; will be
+  inherited as is.
+</p>
+
+<p>The remaining posts in the series build directly on this multi-energy skeleton:</p>
+
+<ul>
+  <li><a href="?id=p3">Post 3 &mdash; Adding Electric Vehicles as Flexible Storage</a>:
+      a fleet of plug-in EVs is modelled as 2D decision variables (time &times; vehicle)
+      with arrival, departure, capacity and a minimum departure SoC, plus a per-EV
+      Big-M mutex on charge / discharge.</li>
+  <li><a href="?id=p4">Post 4 &mdash; Closing the Loop with Cooling</a>: an absorption
+      chiller and an electric chiller add a third balance equation, finally coupling
+      electricity, heat and cooling in a single MILP.</li>
+</ul>
