@@ -3,8 +3,8 @@
     "id": "p1",
     "title": "Introduction to Optimization with C++/CPLEX: A Microgrid Dispatch Example",
     "date": "2026-04-30",
-    "keywords": ["Optimization", "C++", "CPLEX", "Microgrid", "Linear Programming"],
-    "description": "A hands-on first walk through linear programming with IBM CPLEX in C++, formulated as a 24-hour cost-minimisation dispatch of a small microgrid with PV, dispatchable generators, a battery, and grid exchange.",
+    "keywords": ["Optimization", "C++", "CPLEX", "Microgrid", "MILP"],
+    "description": "A hands-on first walk through mixed-integer linear programming (MILP) with IBM CPLEX in C++, formulated as a 24-hour cost-minimisation dispatch of a small microgrid with PV, dispatchable generators, a battery, and grid exchange.",
     "file": "p1.html"
   }
 ]

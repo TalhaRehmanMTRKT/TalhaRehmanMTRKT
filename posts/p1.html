@@ -41,13 +41,11 @@
   to minimise the total operating cost while meeting demand.
 </p>
 
-<!-- Image placeholder — drop assets/p1/system.png and uncomment to enable.
 <figure>
   <img src="assets/p1/system.png" alt="One-line diagram of the microgrid">
   <figcaption>One-line diagram of the microgrid: two dispatchable generators, two PV
   units, a battery, and a grid tie serving a single bus load.</figcaption>
 </figure>
--->
 
 <h2>Mathematical formulation</h2>
 
@@ -59,6 +57,7 @@
   <li>$P_{\text{dg1}}(t),\, P_{\text{dg2}}(t) \ge 0$: dispatchable generator outputs.</li>
   <li>$P_{\text{Gbuy}}(t),\, P_{\text{Gsell}}(t) \ge 0$: power bought from / sold to the grid.</li>
   <li>$B_{\text{chg}}(t),\, B_{\text{dchg}}(t) \ge 0$: battery charging / discharging power.</li>
+  <li>$u_{\text{bat}}(t) \in \{0,1\}$: battery mode indicator ($1$ when the battery is allowed to charge, $0$ when it is allowed to discharge).</li>
   <li>$\text{SoC}(t) \in [0,1]$: battery state of charge.</li>
 </ul>
 
@@ -93,6 +92,29 @@ $$
 <p>
   with $\text{SoC}(0) = \text{SoC}_{\text{ini}}$, and the charge / discharge powers are
   bounded so that $\text{SoC}(t)$ stays inside $[0,1]$.
+</p>
+
+<p>
+  <strong>No simultaneous charge and discharge.</strong> Without an additional
+  constraint, a purely continuous formulation can charge and discharge the battery in
+  the same hour, which is physically meaningless and only happens in the model because
+  the round-trip efficiency leaks energy. We forbid it through a binary mode indicator
+  $u_{\text{bat}}(t) \in \{0,1\}$ and a Big-M formulation:
+</p>
+
+$$
+B_{\text{chg}}(t) \le M_{\text{chg}}\, u_{\text{bat}}(t),
+\qquad
+B_{\text{dchg}}(t) \le M_{\text{dis}}\, \bigl(1 - u_{\text{bat}}(t)\bigr).
+$$
+
+<p>
+  When $u_{\text{bat}}(t) = 1$ the discharging power is forced to zero; when
+  $u_{\text{bat}}(t) = 0$ the charging power is forced to zero. We pick $M_{\text{chg}}$
+  and $M_{\text{dis}}$ equal to the physical upper bounds on $B_{\text{chg}}$ and
+  $B_{\text{dchg}}$ respectively, so the Big-M is as tight as possible. With this
+  binary variable in place the problem is a mixed-integer linear program (MILP), which
+  CPLEX solves with its branch-and-cut engine.
 </p>
 
 <h2>Implementation in C++/CPLEX</h2>
@@ -146,21 +168,25 @@ float effin  = 0.95f;  // Battery efficiency
 <h3>2. Decision variables</h3>
 
 <p>
-  CPLEX exposes <code>IloNumVarArray</code> for vectors of continuous variables. We pass
-  a lower and upper bound directly at construction; this is equivalent to adding two box
-  constraints and produces a slightly leaner model.
+  CPLEX exposes <code>IloNumVarArray</code> for vectors of continuous variables and
+  <code>IloBoolVarArray</code> for vectors of binaries. We pass the lower and upper
+  bounds directly at construction; this is equivalent to adding two box constraints and
+  produces a slightly leaner model.
 </p>
 
-<pre><code class="language-cpp">IloNumVarArray PGbuy  (env, T, 0, IloInfinity); // Grid power bought
-IloNumVarArray PGsell (env, T, 0, IloInfinity); // Grid power sold
+<pre><code class="language-cpp">const float Mchg = 100.0f; // Big-M for charging power
+const float Mdis = 100.0f; // Big-M for discharging power
 
-IloNumVarArray statoc (env, T, 0, 1);   // Battery state of charge
+IloNumVarArray  PGbuy  (env, T, 0, IloInfinity); // Grid power bought
+IloNumVarArray  PGsell (env, T, 0, IloInfinity); // Grid power sold
 
-IloNumVarArray Bchg   (env, T, 0, 100); // Battery charging
-IloNumVarArray Bdischg(env, T, 0, 100); // Battery discharging
+IloNumVarArray  statoc (env, T, 0, 1);    // Battery state of charge
+IloNumVarArray  Bchg   (env, T, 0, Mchg); // Battery charging power
+IloNumVarArray  Bdischg(env, T, 0, Mdis); // Battery discharging power
+IloBoolVarArray ubat   (env, T);          // 1 = charging, 0 = discharging
 
-IloNumVarArray Pdg1   (env, T, 0, 80);  // DG-1 output
-IloNumVarArray Pdg2   (env, T, 0, 100); // DG-2 output
+IloNumVarArray  Pdg1   (env, T, 0,  80);  // DG-1 output
+IloNumVarArray  Pdg2   (env, T, 0, 100);  // DG-2 output
 </code></pre>
 
 <h3>3. Objective</h3>
@@ -186,18 +212,21 @@ model.add(IloMinimize(env, objective));
 <p>
   Every constraint is added inside a single loop over $t$. The first hour is treated as a
   special case so the SoC dynamics can refer to $\text{SoC}_{\text{ini}}$ instead of
-  $\text{SoC}(t-1)$.
+  $\text{SoC}(t-1)$. Note in particular the two Big-M inequalities that link
+  $B_{\text{chg}}$ and $B_{\text{dchg}}$ to the binary mode indicator $u_{\text{bat}}$.
 </p>
 
 <pre><code class="language-cpp">for (int t = 0; t &lt; T; t++)
 {
     // DG output bounds
-    model.add(0 &lt;= Pdg1[t]);  model.add(Pdg1[t] &lt;= 80);
-    model.add(0 &lt;= Pdg2[t]);  model.add(Pdg2[t] &lt;= 90);
+    model.add(Pdg1[t] &lt;= 80);
+    model.add(Pdg2[t] &lt;= 90);
 
-    // Battery state of charge bounds
-    model.add(0 &lt;= statoc[t]); model.add(statoc[t] &lt;= 1);
+    // Mutual exclusion: charge XOR discharge via Big-M and binary ubat
+    model.add(Bchg[t]    &lt;= Mchg *      ubat[t]);
+    model.add(Bdischg[t] &lt;= Mdis * (1 - ubat[t]));
 
+    // Battery dynamics and SoC-derived charge / discharge limits
     if (t == 0)
     {
         model.add(statoc[t] == socini
@@ -223,15 +252,15 @@ model.add(IloMinimize(env, objective));
 <h3>5. Solving and reporting</h3>
 
 <p>
-  <code>IloCplex</code> extracts the model, optionally exports the LP file for inspection,
-  and solves it. We always check the return value of <code>cplex.solve()</code> before
-  reading any value back: a model that is infeasible or unbounded will not have a
-  meaningful objective.
+  <code>IloCplex</code> extracts the model, optionally exports it to a CPLEX
+  <code>.lp</code> file for inspection, and solves it. We always check the return value
+  of <code>cplex.solve()</code> before reading any value back: a model that is
+  infeasible or unbounded will not have a meaningful objective.
 </p>
 
 <pre><code class="language-cpp">IloCplex cplex(env);
 cplex.extract(model);
-cplex.exportModel("ModelLP.lp");
+cplex.exportModel("Model.lp");
 cplex.setOut(env.getNullStream());
 
 if (!cplex.solve()) {
@@ -258,7 +287,8 @@ cout &lt;&lt; "Minimized objective : " &lt;&lt; obj &lt;&lt; endl;
 <pre><code class="language-cpp">std::ofstream outputFile("output.csv");
 if (outputFile.is_open()) {
     outputFile &lt;&lt; "Time,Pload,CGbuy,CGsell,Rdg1,Rdg2,"
-                  "PGbuy,PGsell,statoc,Bchg,Bdischg,Pdg1,Pdg2" &lt;&lt; std::endl;
+                  "PGbuy,PGsell,statoc,Bchg,Bdischg,ubat,Pdg1,Pdg2"
+               &lt;&lt; std::endl;
 
     for (int i = 0; i &lt; T; i++) {
         outputFile &lt;&lt; i + 1                 &lt;&lt; ","
@@ -272,6 +302,7 @@ if (outputFile.is_open()) {
                    &lt;&lt;  cplex.getValue(statoc[i])  &lt;&lt; ","
                    &lt;&lt; -cplex.getValue(Bchg[i])    &lt;&lt; ","
                    &lt;&lt;  cplex.getValue(Bdischg[i]) &lt;&lt; ","
+                   &lt;&lt;  cplex.getValue(ubat[i])    &lt;&lt; ","
                    &lt;&lt;  cplex.getValue(Pdg1[i])    &lt;&lt; ","
                    &lt;&lt;  cplex.getValue(Pdg2[i])    &lt;&lt; std::endl;
     }
@@ -285,8 +316,11 @@ if (outputFile.is_open()) {
   Solving the program with the input data above yields a 24-hour dispatch plan that uses
   the cheapest generator (DG-1) at full capacity throughout the horizon, fills in the
   demand gap with DG-2 during the morning peak, charges the battery from the grid when
-  prices are low, and sells back during the high-price midday window. The hourly
-  trajectories of every decision variable are summarised below.
+  prices are low, and sells back during the high-price midday window. With the new Big-M
+  constraint the battery is never charged and discharged in the same hour, as can be seen
+  from the $u_{\text{bat}}$ column &mdash; rows where charging happens have $u_{\text{bat}} = 1$
+  and zero $B_{\text{dchg}}$, and vice versa for discharging hours. The hourly trajectories
+  of every decision variable are summarised below.
 </p>
 
 <div class="table-wrap">
@@ -296,35 +330,35 @@ if (outputFile.is_open()) {
       <th>Time</th><th>P<sub>load</sub></th><th>C<sub>Gbuy</sub></th><th>C<sub>Gsell</sub></th>
       <th>R<sub>dg1</sub></th><th>R<sub>dg2</sub></th>
       <th>P<sub>Gbuy</sub></th><th>P<sub>Gsell</sub></th>
-      <th>SoC</th><th>B<sub>chg</sub></th><th>B<sub>dchg</sub></th>
+      <th>SoC</th><th>B<sub>chg</sub></th><th>B<sub>dchg</sub></th><th>u<sub>bat</sub></th>
       <th>P<sub>dg1</sub></th><th>P<sub>dg2</sub></th>
     </tr>
   </thead>
   <tbody>
-    <tr><td>1</td><td>169</td><td>90</td><td>70</td><td>0</td><td>0</td><td>157.42</td><td>0</td><td>0.525</td><td>-68.42</td><td>0</td><td>80</td><td>0</td></tr>
-    <tr><td>2</td><td>175</td><td>90</td><td>70</td><td>0</td><td>0</td><td>95.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
-    <tr><td>3</td><td>179</td><td>90</td><td>70</td><td>0</td><td>0</td><td>99.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
-    <tr><td>4</td><td>171</td><td>90</td><td>70</td><td>0</td><td>0</td><td>91.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
-    <tr><td>5</td><td>181</td><td>90</td><td>70</td><td>0</td><td>0</td><td>101.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
-    <tr><td>6</td><td>172</td><td>90</td><td>70</td><td>0</td><td>0</td><td>192.00</td><td>0</td><td>1.000</td><td>-100.00</td><td>0</td><td>80</td><td>0</td></tr>
-    <tr><td>7</td><td>270</td><td>110</td><td>90</td><td>0</td><td>0</td><td>100.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>8</td><td>264</td><td>110</td><td>90</td><td>10</td><td>10</td><td>74.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>9</td><td>273</td><td>110</td><td>90</td><td>15</td><td>15</td><td>73.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>10</td><td>281</td><td>110</td><td>90</td><td>20</td><td>20</td><td>22.24</td><td>0</td><td>0.743</td><td>0</td><td>48.76</td><td>80</td><td>90</td></tr>
-    <tr><td>11</td><td>193</td><td>110</td><td>90</td><td>23</td><td>23</td><td>0</td><td>0</td><td>0.853</td><td>-23.00</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>12</td><td>158</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>-68.00</td><td>0.853</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>13</td><td>161</td><td>125</td><td>105</td><td>33</td><td>33</td><td>0</td><td>-75.00</td><td>0.853</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>14</td><td>162</td><td>125</td><td>105</td><td>35</td><td>35</td><td>0</td><td>-78.00</td><td>0.853</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>15</td><td>250</td><td>125</td><td>105</td><td>34</td><td>34</td><td>0</td><td>0</td><td>0.789</td><td>0</td><td>12.00</td><td>80</td><td>90</td></tr>
-    <tr><td>16</td><td>260</td><td>125</td><td>105</td><td>31</td><td>31</td><td>0</td><td>0</td><td>0.642</td><td>0</td><td>28.00</td><td>80</td><td>90</td></tr>
-    <tr><td>17</td><td>267</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>0</td><td>0.426</td><td>0</td><td>41.00</td><td>80</td><td>90</td></tr>
-    <tr><td>18</td><td>271</td><td>125</td><td>105</td><td>10</td><td>10</td><td>0</td><td>0</td><td>0.000</td><td>0</td><td>81.00</td><td>80</td><td>90</td></tr>
-    <tr><td>19</td><td>284</td><td>110</td><td>90</td><td>0</td><td>0</td><td>114.00</td><td>0</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>20</td><td>167</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-3.00</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>21</td><td>128</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-42.00</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>22</td><td>134</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-36.00</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>23</td><td>144</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-26.00</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
-    <tr><td>24</td><td>150</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-20.00</td><td>0.000</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>1</td><td>169</td><td>90</td><td>70</td><td>0</td><td>0</td><td>157.42</td><td>0</td><td>0.525</td><td>-68.42</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>2</td><td>175</td><td>90</td><td>70</td><td>0</td><td>0</td><td>95.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>3</td><td>179</td><td>90</td><td>70</td><td>0</td><td>0</td><td>99.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>4</td><td>171</td><td>90</td><td>70</td><td>0</td><td>0</td><td>91.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>5</td><td>181</td><td>90</td><td>70</td><td>0</td><td>0</td><td>101.00</td><td>0</td><td>0.525</td><td>0</td><td>0</td><td>0</td><td>80</td><td>0</td></tr>
+    <tr><td>6</td><td>172</td><td>90</td><td>70</td><td>0</td><td>0</td><td>192.00</td><td>0</td><td>1.000</td><td>-100.00</td><td>0</td><td>1</td><td>80</td><td>0</td></tr>
+    <tr><td>7</td><td>270</td><td>110</td><td>90</td><td>0</td><td>0</td><td>100.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>8</td><td>264</td><td>110</td><td>90</td><td>10</td><td>10</td><td>74.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>9</td><td>273</td><td>110</td><td>90</td><td>15</td><td>15</td><td>73.00</td><td>0</td><td>1.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>10</td><td>281</td><td>110</td><td>90</td><td>20</td><td>20</td><td>22.24</td><td>0</td><td>0.743</td><td>0</td><td>48.76</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>11</td><td>193</td><td>110</td><td>90</td><td>23</td><td>23</td><td>0</td><td>0</td><td>0.853</td><td>-23.00</td><td>0</td><td>1</td><td>80</td><td>90</td></tr>
+    <tr><td>12</td><td>158</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>-68.00</td><td>0.853</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>13</td><td>161</td><td>125</td><td>105</td><td>33</td><td>33</td><td>0</td><td>-75.00</td><td>0.853</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>14</td><td>162</td><td>125</td><td>105</td><td>35</td><td>35</td><td>0</td><td>-78.00</td><td>0.853</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>15</td><td>250</td><td>125</td><td>105</td><td>34</td><td>34</td><td>0</td><td>0</td><td>0.789</td><td>0</td><td>12.00</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>16</td><td>260</td><td>125</td><td>105</td><td>31</td><td>31</td><td>0</td><td>0</td><td>0.642</td><td>0</td><td>28.00</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>17</td><td>267</td><td>125</td><td>105</td><td>28</td><td>28</td><td>0</td><td>0</td><td>0.426</td><td>0</td><td>41.00</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>18</td><td>271</td><td>125</td><td>105</td><td>10</td><td>10</td><td>0</td><td>0</td><td>0.000</td><td>0</td><td>81.00</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>19</td><td>284</td><td>110</td><td>90</td><td>0</td><td>0</td><td>114.00</td><td>0</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>20</td><td>167</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-3.00</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>21</td><td>128</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-42.00</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>22</td><td>134</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-36.00</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>23</td><td>144</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-26.00</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
+    <tr><td>24</td><td>150</td><td>110</td><td>90</td><td>0</td><td>0</td><td>0</td><td>-20.00</td><td>0.000</td><td>0</td><td>0</td><td>0</td><td>80</td><td>90</td></tr>
   </tbody>
 </table>
 </div>
@@ -340,8 +374,8 @@ if (outputFile.is_open()) {
 <p>
   This formulation is intentionally minimal so that every decision and constraint is easy
   to inspect. Natural extensions include adding binary on/off variables for the
-  dispatchable generators (turning the LP into a MILP), modelling start-up costs and
-  minimum up/down times, introducing reserve requirements, and accounting for forecast
-  uncertainty through robust or stochastic formulations. We will pick these up in later
-  posts of this series.
+  dispatchable generators, modelling start-up costs and minimum up/down times,
+  introducing reserve requirements, and accounting for forecast uncertainty through
+  robust or stochastic formulations. We will pick these up in later posts of this
+  series.
 </p>
