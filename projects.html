@@ -24,6 +24,9 @@
 
 <body>
 
+  <!-- Live animated background (dark mode only) -->
+  <div class="bg-live" aria-hidden="true"></div>
+
   <!-- NAVIGATION -->
   <nav class="navbar">
     <div class="nav-inner">
@@ -32,7 +35,6 @@
         <a href="index.html" class="nav-link">About</a>
         <a href="publications.html" class="nav-link">Publications</a>
         <a href="projects.html" class="nav-link active">Projects</a>
-        <a href="blogs.html" class="nav-link">Blogs</a>
       </div>
       <div class="nav-right">
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode">
@@ -86,23 +88,38 @@
         <h2 class="project-group-title">Currently Active</h2>
         <div class="project-list">
 
-          <!-- Agent-based Grid Operation -->
+          <!-- Self-Healing Grid Operation -->
           <div class="project-card" data-animate>
             <span class="project-status in-progress">In Progress</span>
             <div class="project-card-header">
-              <h3 class="project-title">Agent-based Grid Operation</h3>
+              <h3 class="project-title"><a href="https://github.com/Power-and-Renewable-Energy-Lab-INU/DistributedAlgorithms"
+                  target="_blank" rel="noopener">Self-Healing Grid Operation</a></h3>
             </div>
             <p class="project-description">
-              Developing an agent-based framework for smart grid operation, leveraging multi-agent systems for
-              distributed energy resource management and grid optimization. The work explores how cooperative agents
-              negotiate dispatch, balance reserves, and coordinate flexible loads in real time, with the longer-term
-              goal of integrating learning-based controllers into hierarchical grid architectures.
+              Joint project of the <a href="https://hvdcmicrogrid.wixsite.com/powerlab" target="_blank" rel="noopener">Power and Renewable Energy Lab</a>
+              at <strong>Incheon National University (INU)</strong>, South Korea, and the
+              <strong>Korea Electrotechnology Research Institute (KERI)</strong>. The work develops distributed multi-agent
+              algorithms for self-healing grid operation — coordinating dispatch, reserves, and flexible loads under
+              contingencies, with the longer-term goal of integrating learning-based controllers into hierarchical grid
+              architectures. Related publication:
+              <a href="https://doi.org/10.1016/j.apenergy.2026.127939" target="_blank" rel="noopener">Applied Energy 2026 (DOI)</a>.
             </p>
             <div class="project-tags">
               <span class="project-tag">Python</span>
               <span class="project-tag">Multi-Agent Systems</span>
-              <span class="project-tag">Smart Grid</span>
+              <span class="project-tag">Distributed Algorithms</span>
+              <span class="project-tag">Self-Healing Grid</span>
+              <span class="project-tag">INU × KERI</span>
             </div>
+            <a href="https://github.com/Power-and-Renewable-Energy-Lab-INU/DistributedAlgorithms" target="_blank" rel="noopener"
+              class="project-link-btn">
+              View Repository
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
           </div>
 
         </div>
@@ -119,21 +136,20 @@
           <div class="project-card" data-animate>
             <span class="project-status finished">End of Life</span>
             <div class="project-card-header">
-              <h3 class="project-title"><a href="https://github.com/TalhaRehmanMTRKT/OptimalOperations-MediumContent"
+              <h3 class="project-title"><a href="https://github.com/TalhaRehmanMTRKT/optimal-operations-medium-content"
                   target="_blank" rel="noopener">Medium Blog Series</a></h3>
             </div>
             <p class="project-description">
               Code implementations accompanying my Medium blog series on optimal operations of microgrids. Includes
               C++/CPLEX implementation guides, mathematical models, and practical optimization examples for energy
-              dispatch problems. This repository is no longer actively maintained — its content is being reworked and
-              expanded into the upcoming trk-blog series with cleaner code and more detailed explanations.
+              dispatch problems. This repository is no longer actively maintained.
             </p>
             <div class="project-tags">
               <span class="project-tag">C++/CPLEX</span>
               <span class="project-tag">Medium</span>
               <span class="project-tag">Optimization</span>
             </div>
-            <a href="https://github.com/TalhaRehmanMTRKT/OptimalOperations-MediumContent" target="_blank" rel="noopener"
+            <a href="https://github.com/TalhaRehmanMTRKT/optimal-operations-medium-content" target="_blank" rel="noopener"
               class="project-link-btn">
               View Repository
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -148,21 +164,20 @@
           <div class="project-card" data-animate>
             <span class="project-status finished">End of Life</span>
             <div class="project-card-header">
-              <h3 class="project-title"><a href="https://github.com/TalhaRehmanMTRKT/MicrogridOptimization"
-                  target="_blank" rel="noopener">Microgrid Optimization</a></h3>
+              <h3 class="project-title"><a href="https://github.com/TalhaRehmanMTRKT/microgrid-optimization-examples"
+                  target="_blank" rel="noopener">Microgrid Optimization Examples</a></h3>
             </div>
             <p class="project-description">
               C++/CPLEX implementation of multi-energy microgrid operation, covering economic dispatch, storage
-              scheduling, and resilience-oriented constraints. The repository is no longer maintained, as the content
-              will be moved in a refined form to the upcoming blog series on my website. For the latest updates, please
-              follow my blog and GitHub profile.
+              scheduling, and resilience-oriented constraints. The repository is preserved as an archive and is no
+              longer actively maintained.
             </p>
             <div class="project-tags">
               <span class="project-tag">C++/CPLEX</span>
               <span class="project-tag">Multi-Energy Microgrid</span>
               <span class="project-tag">Optimal Operation</span>
             </div>
-            <a href="https://github.com/TalhaRehmanMTRKT/MicrogridOptimization" target="_blank" rel="noopener"
+            <a href="https://github.com/TalhaRehmanMTRKT/microgrid-optimization-examples" target="_blank" rel="noopener"
               class="project-link-btn">
               View Repository
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -177,7 +192,7 @@
           <div class="project-card" data-animate>
             <span class="project-status finished">End of Life</span>
             <div class="project-card-header">
-              <h3 class="project-title"><a href="https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting"
+              <h3 class="project-title"><a href="https://github.com/TalhaRehmanMTRKT/lstm-flood-forecasting-namal"
                   target="_blank" rel="noopener">LSTM for Flood &amp; Drought Forecasting</a></h3>
             </div>
             <p class="project-description">
@@ -191,7 +206,7 @@
               <span class="project-tag">Deep Learning</span>
               <span class="project-tag">Time Series</span>
             </div>
-            <a href="https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting" target="_blank" rel="noopener"
+            <a href="https://github.com/TalhaRehmanMTRKT/lstm-flood-forecasting-namal" target="_blank" rel="noopener"
               class="project-link-btn">
               View Repository
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -210,15 +225,20 @@
                   rel="noopener">Black Hole of Repos</a></h3>
             </div>
             <p class="project-description">
-              Past content from my Bachelor's, including work in C++, Python, embedded systems, and computer networks.
-              This repository collects earlier projects, classroom assignments, experiments, and code snippets that
-              shaped my engineering foundation. It is preserved as an archive rather than as actively maintained code.
+              An archive of older work from my Bachelor's at Namal University and a seminar at Incheon National
+              University (INU). It collects coursework, experiments, and small utilities — preserved as-is rather than
+              actively maintained.
             </p>
             <div class="project-tags">
-              <span class="project-tag">C++</span>
-              <span class="project-tag">Python</span>
-              <span class="project-tag">Embedded Systems</span>
-              <span class="project-tag">Computer Networks</span>
+              <span class="project-tag">DSA (C++)</span>
+              <span class="project-tag">Embedded Systems (Tiva C)</span>
+              <span class="project-tag">Computer Networks (Cisco)</span>
+              <span class="project-tag">Vending Machine</span>
+              <span class="project-tag">Tic-Tac-Toe</span>
+              <span class="project-tag">Scratch Game</span>
+              <span class="project-tag">ASO Power Flow (INU Seminar)</span>
+              <span class="project-tag">Heroku / Flask</span>
+              <span class="project-tag">Web Utilities</span>
             </div>
             <a href="https://github.com/TalhaRehmanMTRKT/trk-blackhole" target="_blank" rel="noopener"
               class="project-link-btn">

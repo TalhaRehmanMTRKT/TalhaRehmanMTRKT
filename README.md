@@ -42,11 +42,11 @@ PhD student at Incheon National University, South Korea. Researching optimal des
 
 |   | Project | Description |
 |---|---|---|
-| ⚡ | **Agent-based Grid Operation** | Multi-agent framework for distributed energy resource management.<br>**Status:** In Progress |
-| 💻 | [Medium Blogs Content](https://github.com/TalhaRehmanMTRKT/OptimalOperations-MediumContent) | C++/CPLEX implementations for energy systems optimization.<br>**Status:** End of Life |
-| 🔋 | [Microgrid Operation](https://github.com/TalhaRehmanMTRKT/MicrogridOptimization) | Optimal operation and design of multi-energy microgrids.<br>**Status:** End of Life |
-| 🌊 | [LSTM Forecasting](https://github.com/TalhaRehmanMTRKT/LSTM_TimeSeriesForecasting) | LSTM-based flood and drought time series forecasting.<br>**Status:** End of Life |
-| 🕳️ | [Black Hole of Repos](https://github.com/TalhaRehmanMTRKT/trk-blackhole) | Miscellaneous code experiments and snippets.<br>**Status:** End of Life |
+| ⚡ | [Self-Healing Grid Operation](https://github.com/Power-and-Renewable-Energy-Lab-INU/DistributedAlgorithms) | Joint project of the [Power and Renewable Energy Lab](https://hvdcmicrogrid.wixsite.com/powerlab) (Incheon National University) and **KERI** (Korea Electrotechnology Research Institute) on distributed multi-agent algorithms for self-healing grid operation. Related publication: [Applied Energy 2026](https://doi.org/10.1016/j.apenergy.2026.127939).<br>**Status:** In Progress |
+| 💻 | [Medium Blog Series](https://github.com/TalhaRehmanMTRKT/optimal-operations-medium-content) | C++/CPLEX implementations for energy systems optimization.<br>**Status:** End of Life |
+| 🔋 | [Microgrid Optimization Examples](https://github.com/TalhaRehmanMTRKT/microgrid-optimization-examples) | Optimal operation and design of multi-energy microgrids.<br>**Status:** End of Life |
+| 🌊 | [LSTM Flood Forecasting](https://github.com/TalhaRehmanMTRKT/lstm-flood-forecasting-namal) | LSTM-based flood and drought time series forecasting (FYP, Namal).<br>**Status:** End of Life |
+| 🕳️ | [Black Hole of Repos](https://github.com/TalhaRehmanMTRKT/trk-blackhole) | Archive of older work: DSA (C++), Embedded Systems (Tiva C), Computer Networks (Cisco Packet Tracer), Vending Machine firmware, Tic-Tac-Toe, Scratch game, ASO Power Flow seminar (INU), Heroku/Flask deployment test, and small web utilities (counter, stopwatch).<br>**Status:** End of Life |
 
 
 ## 🛠️ Skills & Tools
@@ -70,59 +70,23 @@ PhD student at Incheon National University, South Korea. Researching optimal des
 
 <!--
 ╔═══════════════════════════════════════════════════════════════════════════╗
-║  INTERNAL NOTES — Blog Management Instructions                           ║
+║  INTERNAL NOTES — Website Structure                                       ║
 ║  (This section is inside an HTML comment and is NOT shown publicly.)      ║
 ╠═══════════════════════════════════════════════════════════════════════════╣
-║                                                                           ║
-║  HOW TO ADD A NEW BLOG POST                                               ║
-║  ─────────────────────────────────────────────────────────────────         ║
-║                                                                           ║
-║  1. Copy  posts/template.html  →  posts/your-post-slug.html              ║
-║                                                                           ║
-║  2. Write your content using:                                             ║
-║     • HTML (headings, paragraphs, lists, tables, blockquotes, images)     ║
-║     • LaTeX math:  $...$  for inline,  $$...$$  for display equations     ║
-║     • Code blocks: <pre><code class="language-xxx">...</code></pre>     ║
-║     • Images: <img src="assets/your-image.png" alt="description">        ║
-║                                                                           ║
-║  3. Register the post in  posts/posts.json  by adding an entry:           ║
-║                                                                           ║
-║     {                                                                     ║
-║       "id": "your-post-slug",           ← must match filename (no .html)║
-║       "title": "Your Post Title",                                        ║
-║       "date": "2025-01-15",             ← YYYY-MM-DD format             ║
-║       "context": "Category Name",       ← groups posts on listing page  ║
-║       "description": "Short summary.",  ← shown on blog listing card    ║
-║       "file": "your-post-slug.html"     ← filename in posts/            ║
-║     }                                                                     ║
-║                                                                           ║
-║  NOTES:                                                                   ║
-║  • The "context" field categorises posts (e.g. "Optimization",            ║
-║    "Energy Systems", "Deep Learning"). It appears as a filter button      ║
-║    and badge, but is NOT visible in the blog post body.                    ║
-║  • Posts are sorted by date (newest first) automatically.                 ║
-║  • No build step needed — just commit and push.                           ║
-║  • KaTeX renders LaTeX; Highlight.js highlights code blocks.              ║
 ║                                                                           ║
 ║  PORTFOLIO WEBSITE STRUCTURE                                              ║
 ║  ─────────────────────────────────────────────────────────────────         ║
 ║  index.html        → About page (profile, skills, education, hobbies)    ║
 ║  publications.html → Journal publications listing                         ║
 ║  projects.html     → Projects listing                                     ║
-║  blogs.html        → Blog listing (grouped by context/category)           ║
-║  post.html         → Blog post viewer (loads content + KaTeX + hljs)      ║
 ║  css/style.css     → Global styles, font config, light/dark themes        ║
-║  js/main.js        → Theme toggle, blog loader, navigation                ║
-║  posts/posts.json  → Blog post manifest (metadata for all posts)          ║
-║  posts/*.html      → Individual blog post content files                   ║
-║  assets/           → Images for blog posts and site assets                ║
+║  js/main.js        → Theme toggle, navigation, animations                 ║
+║  assets/           → Site assets (logos, icons, images)                   ║
 ║                                                                           ║
 ║  FONT CUSTOMISATION                                                       ║
 ║  Change fonts at top of css/style.css (CSS custom properties):            ║
 ║    --font-heading       Site headings (Inter)                             ║
 ║    --font-body          Site body text (Inter)                            ║
-║    --font-blog-title    Blog post titles (Playfair Display)               ║
-║    --font-blog-body     Blog post body (Source Serif 4)                   ║
 ║    --font-code          Code blocks (JetBrains Mono)                      ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝

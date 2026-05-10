@@ -17,14 +17,6 @@
   function setTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem(THEME_KEY, theme);
-
-    // Sync highlight.js theme sheets on post page
-    var hljsLight = document.getElementById('hljs-light');
-    var hljsDark = document.getElementById('hljs-dark');
-    if (hljsLight && hljsDark) {
-      hljsLight.disabled = (theme === 'dark');
-      hljsDark.disabled = (theme !== 'dark');
-    }
   }
 
   function toggleTheme() {
@@ -41,11 +33,6 @@
     initMobileMenu();
     initActiveNav();
     initPageAnimations();
-
-    // Page-specific initializations
-    const page = detectPage();
-    if (page === 'blogs') initBlogListing();
-    if (page === 'post') initPostViewer();
   });
 
   // ── Theme Toggle ──────────────────────────────────────────────
@@ -95,15 +82,6 @@
     });
   }
 
-  // ── Page Detection ────────────────────────────────────────────
-  function detectPage() {
-    const path = window.location.pathname.split('/').pop() || 'index.html';
-    if (path === 'blogs.html') return 'blogs';
-    if (path === 'post.html') return 'post';
-    if (path === 'projects.html') return 'projects';
-    return 'about';
-  }
-
   // ── Page Animations ───────────────────────────────────────────
   function initPageAnimations() {
     const els = document.querySelectorAll('[data-animate]');
@@ -122,208 +100,6 @@
       el.style.opacity = '0';
       observer.observe(el);
     });
-  }
-
-  // ── Blog Listing ──────────────────────────────────────────────
-  function initBlogListing() {
-    const container = document.getElementById('blogContainer');
-    const filtersContainer = document.getElementById('blogFilters');
-    if (!container) return;
-
-    fetch('posts/posts.json')
-      .then(function (res) { return res.json(); })
-      .then(function (posts) {
-        if (!posts.length) {
-          container.innerHTML = '<div class="blog-empty"><div class="blog-empty-icon">📝</div><p>No blog posts yet. Check back soon!</p></div>';
-          return;
-        }
-
-        // Sort by date descending
-        posts.sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
-
-        // Get unique keywords with counts
-        var keywordCounts = {};
-        posts.forEach(function (p) {
-          var kws = p.keywords || [];
-          kws.forEach(function (kw) {
-            keywordCounts[kw] = (keywordCounts[kw] || 0) + 1;
-          });
-        });
-        var keywords = Object.keys(keywordCounts).sort();
-
-        // Build filter buttons
-        if (filtersContainer && keywords.length > 0) {
-          var filtersHtml = '<button class="filter-btn active" data-filter="all">All <span class="filter-count">' + posts.length + '</span></button>';
-          keywords.forEach(function (kw) {
-            filtersHtml += '<button class="filter-btn" data-filter="' + escapeHtml(kw) + '">' + escapeHtml(kw) + ' <span class="filter-count">' + keywordCounts[kw] + '</span></button>';
-          });
-          filtersContainer.innerHTML = filtersHtml;
-
-          filtersContainer.querySelectorAll('.filter-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-              filtersContainer.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
-              btn.classList.add('active');
-              renderBlogPosts(posts, btn.getAttribute('data-filter'), container);
-            });
-          });
-        }
-
-        renderBlogPosts(posts, 'all', container);
-      })
-      .catch(function (err) {
-        console.error('Failed to load posts:', err);
-        container.innerHTML = '<div class="blog-empty"><div class="blog-empty-icon">⚠️</div><p>Failed to load posts. Please try again later.</p></div>';
-      });
-  }
-
-  function renderBlogPosts(posts, filter, container) {
-    var filtered = filter === 'all' ? posts : posts.filter(function (p) {
-      var kws = p.keywords || [];
-      return kws.indexOf(filter) !== -1;
-    });
-
-    if (!filtered.length) {
-      container.innerHTML = '<div class="blog-empty"><div class="blog-empty-icon">📭</div><p>No posts with this keyword yet.</p></div>';
-      return;
-    }
-
-    var pinned  = filtered.filter(function (p) { return p.pinned; });
-    var regular = filtered.filter(function (p) { return !p.pinned; });
-
-    var html = '';
-    if (pinned.length) {
-      html += '<section class="blog-section blog-section-pinned" aria-label="Pinned posts">';
-      html += '<h2 class="blog-section-title"><span class="blog-section-icon">📌</span> Pinned</h2>';
-      html += renderBlogCards(pinned, true);
-      html += '</section>';
-    }
-    if (regular.length) {
-      html += '<section class="blog-section blog-section-all" aria-label="All posts">';
-      if (pinned.length) {
-        html += '<h2 class="blog-section-title">All posts</h2>';
-      }
-      html += renderBlogCards(regular, false);
-      html += '</section>';
-    }
-
-    container.innerHTML = html;
-  }
-
-  function renderBlogCards(posts, isPinned) {
-    var html = '<div class="blog-cards">';
-    posts.forEach(function (post) {
-      var cls = 'blog-card' + (isPinned ? ' blog-card-pinned' : '');
-      html += '<a href="post.html?id=' + encodeURIComponent(post.id) + '" class="' + cls + '">';
-      if (isPinned) {
-        html += '<span class="blog-card-pin" aria-hidden="true">📌</span>';
-      }
-      html += '<div class="blog-card-date">' + formatDate(post.date) + '</div>';
-      html += '<div class="blog-card-title">' + escapeHtml(post.title) + '</div>';
-      if (post.description) {
-        html += '<div class="blog-card-desc">' + escapeHtml(post.description) + '</div>';
-      }
-      var kws = post.keywords || [];
-      if (kws.length) {
-        html += '<div class="blog-card-keywords">';
-        kws.forEach(function (kw) {
-          html += '<span class="blog-card-context">' + escapeHtml(kw) + '</span>';
-        });
-        html += '</div>';
-      }
-      html += '</a>';
-    });
-    html += '</div>';
-    return html;
-  }
-
-  // ── Post Viewer ───────────────────────────────────────────────
-  function initPostViewer() {
-    var params = new URLSearchParams(window.location.search);
-    var postId = params.get('id');
-
-    var titleEl = document.getElementById('postTitle');
-    var metaEl = document.getElementById('postMeta');
-    var bodyEl = document.getElementById('postBody');
-    var headerEl = document.getElementById('postHeader');
-
-    if (!postId || !bodyEl) {
-      if (bodyEl) bodyEl.innerHTML = '<div class="blog-empty"><div class="blog-empty-icon">🔍</div><p>Post not found.</p></div>';
-      return;
-    }
-
-    // Show loading
-    bodyEl.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
-
-    fetch('posts/posts.json')
-      .then(function (res) { return res.json(); })
-      .then(function (posts) {
-        var post = posts.find(function (p) { return p.id === postId; });
-        if (!post) throw new Error('Post not found');
-
-        // Set page title
-        document.title = post.title + ' — Talha Rehman';
-
-        // Render header
-        if (titleEl) titleEl.textContent = post.title;
-        if (metaEl) {
-          var metaHtml = '<span>' + formatDate(post.date) + '</span>';
-          var kws = post.keywords || [];
-          if (kws.length) {
-            metaHtml += '<span class="post-meta-divider"></span>';
-            kws.forEach(function (kw) {
-              metaHtml += '<span class="post-context-badge">' + escapeHtml(kw) + '</span> ';
-            });
-          }
-          metaEl.innerHTML = metaHtml;
-        }
-
-        // Fetch post content
-        return fetch('posts/' + post.file);
-      })
-      .then(function (res) {
-        if (!res.ok) throw new Error('Failed to load post content');
-        return res.text();
-      })
-      .then(function (html) {
-        bodyEl.innerHTML = html;
-
-        // Initialize syntax highlighting
-        if (window.hljs) {
-          bodyEl.querySelectorAll('pre code').forEach(function (block) {
-            window.hljs.highlightElement(block);
-          });
-        }
-
-        // Initialize KaTeX auto-render
-        if (window.renderMathInElement) {
-          window.renderMathInElement(bodyEl, {
-            delimiters: [
-              { left: '$$', right: '$$', display: true },
-              { left: '$', right: '$', display: false },
-              { left: '\\(', right: '\\)', display: false },
-              { left: '\\[', right: '\\]', display: true }
-            ],
-            throwOnError: false
-          });
-        }
-      })
-      .catch(function (err) {
-        console.error('Post load error:', err);
-        bodyEl.innerHTML = '<div class="blog-empty"><div class="blog-empty-icon">⚠️</div><p>Failed to load post. Please try again later.</p></div>';
-      });
-  }
-
-  // ── Utilities ─────────────────────────────────────────────────
-  function escapeHtml(str) {
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  function formatDate(dateStr) {
-    var d = new Date(dateStr + 'T00:00:00');
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
   }
 
 })();
